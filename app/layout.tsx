@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Poppins, Inter } from "next/font/google";
 import "./globals.css";
+import { ThemeProvider } from "@/hooks/themeContext";
 
 const poppins = Poppins({
   weight: ["300", "400", "500"],
@@ -8,7 +9,7 @@ const poppins = Poppins({
 });
 
 const inter = Inter({
-  weight: ["300","600"],
+  weight: ["300", "600"],
   variable: "--font-inter",
 })
 
@@ -39,7 +40,9 @@ export default function RootLayout({
       <body
         className={`${poppins.variable} ${inter.variable}`}
       >
-        {children}
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

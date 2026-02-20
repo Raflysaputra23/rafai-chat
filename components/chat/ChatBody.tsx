@@ -13,7 +13,7 @@ const suggestions = [
   { icon: BookOpen, label: "Bantu pelajari", desc: "Algoritma dan struktur data" },
 ];
 
-export function ChatBody({ messages, onSend, isNew }: ChatAreaProps) {
+export function ChatBody({ messages, onSend, isNew, loading }: ChatAreaProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -52,16 +52,27 @@ export function ChatBody({ messages, onSend, isNew }: ChatAreaProps) {
           </div>
         ) : (
           <div className="max-w-3xl mx-auto px-4 py-6 space-y-1">
-            {messages.map((msg) => (
-              <ChatMessageBubble key={msg.id} message={msg} />
+            {messages.map((msg, i) => (
+              <ChatMessageBubble key={i} message={msg} />
             ))}
+
+            {/* Loading indicator */}
+            <div className={`h-10 w-10 ${loading ? "visible opacity-100 scale-100 transition duration-600 ease-in-out" : "invisible opacity-0 scale-50"} flex rounded-lg bg-primary/30 shadow shadow-primary items-center justify-center mb-6 glow-primary relative`}>
+              <Zap className={`${loading ? "opacity-100 scale-100 transition duration-600 ease-in-out" : "invisible opacity-0 scale-50"} h-6 w-6 text-primary`} />
+              {/* Orbiting dot */}
+              <div className="absolute inset-0 animate-spin" style={{ animationDuration: "3s" }}>
+                <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 h-3 w-3 rounded-full bg-primary glow-primary" />
+              </div>
+            </div>
+
+            {/* Scroll to bottom */}
             <div ref={bottomRef} />
           </div>
         )}
       </div>
 
       {/* Input */}
-      <div className="flex-shrink-0 px-4 pb-4 pt-2">
+      <div className="shrink-0 px-4 pb-4 pt-2">
         <div className="max-w-3xl mx-auto">
           <ChatInput onSend={onSend} />
           <p className="text-[11px] text-muted-foreground text-center mt-2">

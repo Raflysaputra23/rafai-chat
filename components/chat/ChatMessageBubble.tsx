@@ -7,7 +7,7 @@ export function ChatMessageBubble({ message }: { message: ChatMessage }) {
   return (
     <div className={`flex gap-3 py-4 ${isUser ? "justify-end" : ""}`}>
       {!isUser && (
-        <div className="flex-shrink-0 h-8 w-8 rounded-lg bg-primary/15 flex items-center justify-center mt-1">
+        <div className="shrink-0 h-8 w-8 rounded-lg bg-primary/15 flex items-center justify-center mt-1">
           <Zap className="h-4 w-4 text-primary" />
         </div>
       )}
@@ -19,7 +19,7 @@ export function ChatMessageBubble({ message }: { message: ChatMessage }) {
             : "bg-card border border-border text-foreground rounded-bl-md"
         }`}
       >
-        {message.content.split("\n").map((line, i) => (
+        {message.parts[0].text.split("\n").map((line, i) => (
           <p key={i} className={i > 0 ? "mt-2" : ""}>
             {line.split(/(\*\*.*?\*\*)/).map((part, j) =>
               part.startsWith("**") && part.endsWith("**") ? (
@@ -33,7 +33,7 @@ export function ChatMessageBubble({ message }: { message: ChatMessage }) {
       </div>
 
       {isUser && (
-        <div className="flex-shrink-0 h-8 w-8 rounded-lg bg-secondary flex items-center justify-center mt-1">
+        <div className="shrink-0 h-8 w-8 rounded-lg bg-secondary flex items-center justify-center mt-1">
           <User className="h-4 w-4 text-secondary-foreground" />
         </div>
       )}

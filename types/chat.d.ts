@@ -5,9 +5,10 @@ export interface ChatConversation {
 }
 
 export interface ChatMessage {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
+  role: string
+  parts: [{
+    text: string
+  }]
 }
 
 export interface ChatSidebarProps {
@@ -20,11 +21,12 @@ export interface ChatSidebarProps {
 }
 
 interface ChatInputProps {
-  onSend: (content: string) => void;
+  onSend: (content: string, files?: File[]) => void;
 }
 
 interface ChatAreaProps {
   messages: ChatMessage[];
   onSend: (content: string) => void;
   isNew: boolean;
+  loading: boolean;
 }

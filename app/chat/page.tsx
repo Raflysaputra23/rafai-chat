@@ -6,8 +6,10 @@ import { ChatBody } from "@/components/chat/ChatBody";
 import { Menu } from "lucide-react";
 import type { ChatConversation, ChatMessage } from "@/types/chat.d.ts";
 import { Button } from "@/components/ui/button";
+import useTheme from "@/hooks/useTheme";
+import { LoadingScreen } from "@/components/loading/LoadingScreen";
 
-const Index = () => {
+const Chatbot = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [conversations, setConversations] = useState<ChatConversation[]>([
     { id: "1", title: "Cara membuat REST API", createdAt: new Date() },
@@ -16,17 +18,20 @@ const Index = () => {
   ]);
   const [activeConversation, setActiveConversation] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadingText, setLoadingText] = useState(false);
+  const { isDark } = useTheme();
 
   useEffect(() => {
     const handleResize = () => {
-        if(window.innerWidth > 768) {
-            setSidebarOpen(true)
-        }
+      if (window.innerWidth > 768) {
+        setSidebarOpen(true)
+      }
     }
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => {
-        window.removeEventListener("resize", handleResize)
+      window.removeEventListener("resize", handleResize)
     };
   }, []);
 
@@ -39,18 +44,19 @@ const Index = () => {
     setActiveConversation(id);
     // Mock messages for demo
     setMessages([
-      { id: "m1", role: "user", content: "Halo, bagaimana cara membuat REST API?" },
-      { id: "m2", role: "assistant", content: "Halo! Untuk membuat REST API, kamu bisa menggunakan beberapa framework populer seperti:\n\n1. **Express.js** (Node.js)\n2. **FastAPI** (Python)\n3. **Spring Boot** (Java)\n\nMau saya jelaskan langkah-langkahnya dengan framework tertentu?" },
+      { role: "user", parts: [{ text: "Halo, bagaimana cara membuat REST API?" }] },
+      { role: "model", parts: [{ text: "Halo! Untuk membuat REST API, kamu bisa menggunakan beberapa framework populer seperti:\n\n1. **Express.js** (Node.js)\n2. **FastAPI** (Python)\n3. **Spring Boot** (Java)\n\nMau saya jelaskan langkah-langkahnya dengan framework tertentu?" }] },
     ]);
   };
 
-  const handleSendMessage = (content: string) => {
-    const userMsg: ChatMessage = { id: Date.now().toString(), role: "user", content };
+  const handleSendMessage = async (content: string, files?: File[]) => {
+    const userMsg: ChatMessage = { role: "user", parts: [{ text: content }] };
     setMessages((prev) => [...prev, userMsg]);
+    setLoadingText(true);
 
     if (!activeConversation) {
       const newConv: ChatConversation = {
-        id: Date.now().toString(),
+        id: crypto.randomUUID(),
         title: content.slice(0, 40) + (content.length > 40 ? "..." : ""),
         createdAt: new Date(),
       };
@@ -59,18 +65,46 @@ const Index = () => {
     }
 
     // Mock bot response
-    setTimeout(() => {
-      const botMsg: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: "Terima kasih atas pertanyaannya! Saya adalah RafAI, asisten AI yang siap membantu kamu. Fitur ini masih dalam tahap demo, tapi nanti saya akan bisa menjawab pertanyaan kamu secara lengkap. 🚀",
-      };
+    const response = await handleRespon(content, files);
+    setLoadingText(false);
+    if(response) {
+      const botMsg: ChatMessage = { role: "model", parts: [{ text: response }] };
       setMessages((prev) => [...prev, botMsg]);
-    }, 1200);
+    }
   };
 
-  return (
-    <div className="flex h-screen w-full bg-background dark">
+  const handleRespon = async (prompt: string, file?: File[]) => {
+    try {
+      const formdata = new FormData();
+      formdata.append("prompt", prompt);
+      if (file) {
+        file.forEach((f) => formdata.append("files", f));
+        formdata.append("typeChat", "multimodal");
+      }
+
+      const res = await fetch("http://localhost:3000/api/v1", {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + process.env.NEXT_PUBLIC_API_KEY
+        },
+        body: formdata
+      });
+
+      if (res.status === 200) {
+        const data = await res.json();
+        return data.response;
+      } else {
+        return null;
+      }
+    } catch (error) {
+      return null;
+    }
+  }
+
+
+
+  return loading ? <LoadingScreen onFinish={() => setLoading(false)} /> : (
+    <div className={`flex h-screen w-full bg-background ${isDark && "dark"}`}>
       {/* Mobile toggle */}
       <Button
         variant={"hero"}
@@ -92,10 +126,11 @@ const Index = () => {
       <ChatBody
         messages={messages}
         onSend={handleSendMessage}
+        loading={loadingText}
         isNew={!activeConversation && messages.length === 0}
       />
     </div>
   );
 };
 
-export default Index;
+export default Chatbot;

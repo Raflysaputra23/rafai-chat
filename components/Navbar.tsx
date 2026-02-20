@@ -4,9 +4,10 @@ import { Menu, Moon, Sun, X, Zap } from 'lucide-react';
 import { useEffect, useState } from 'react'
 import { Button } from './ui/button';
 import Link from 'next/link';
+import useTheme from '@/hooks/useTheme';
 
 const Navbar = () => {
-    const [isDark, setIsDark] = useState(true);
+    const { isDark, toggleTheme } = useTheme();
     const [scrolled, setScrolled] = useState(false);
     const [sidebar, setSidebar] = useState(false);
 
@@ -22,16 +23,6 @@ const Navbar = () => {
         window.addEventListener("scroll", handleScroll);
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
-
-    const toggleTheme = () => {
-        setIsDark(!isDark);
-        localStorage.setItem("theme", isDark ? "light" : "dark");
-        if (isDark) {
-            document.documentElement.classList.remove("dark");
-        } else {
-            document.documentElement.classList.add("dark");
-        }
-    };
 
     const toggleSidebar = () => {
         setSidebar(!sidebar);

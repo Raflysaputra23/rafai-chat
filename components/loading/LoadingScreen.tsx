@@ -12,7 +12,6 @@ interface LoadingScreenProps {
 export function LoadingScreen({ onFinish, statusLoading }: LoadingScreenProps) {
   const [progress, setProgress] = useState(0);
   const [phase, setPhase] = useState(0);
-  const [isDark, setIsDark] = useState(true);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -36,22 +35,9 @@ export function LoadingScreen({ onFinish, statusLoading }: LoadingScreenProps) {
           return Math.min(prev + increment, 90);
         }
       });
-    }, 200);
+    }, 50);
     return () => clearInterval(interval);
   }, [onFinish, statusLoading]);
-
-  useEffect(() => {
-    const setIsTheme = () => {
-      const isDark = localStorage.getItem("theme") === "dark";
-      if (isDark && !document.documentElement.classList.contains("dark")) {
-        document.documentElement.classList.add("dark");
-      } else {
-        document.documentElement.classList.remove("dark");
-      }
-      setIsDark(isDark);
-    }
-    setIsTheme();
-  },[]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -72,7 +58,7 @@ export function LoadingScreen({ onFinish, statusLoading }: LoadingScreenProps) {
 
   return (
     <div
-      className={`fixed inset-0 z-100 flex flex-col items-center justify-center bg-background transition-opacity duration-500 ${isDark && "dark"} ${progress >= 100 ? "opacity-0 pointer-events-none" : "opacity-100"
+      className={`fixed inset-0 z-100 flex flex-col items-center justify-center bg-background transition-opacity duration-500 dark ${progress >= 100 ? "opacity-0 pointer-events-none" : "opacity-100"
         }`}
     >
       {/* Ambient glow rings */}
