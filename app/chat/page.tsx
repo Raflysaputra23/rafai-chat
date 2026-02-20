@@ -82,7 +82,7 @@ const Chatbot = () => {
         formdata.append("typeChat", "multimodal");
       }
 
-      const res = await fetch("http://localhost:3000/api/v1", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_URL_DOMAIN}/api/v1`, {
         method: "POST",
         headers: {
           Authorization: "Bearer " + process.env.NEXT_PUBLIC_API_KEY
