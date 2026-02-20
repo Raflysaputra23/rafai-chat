@@ -15,7 +15,7 @@ const inter = Inter({
 
 
 export const metadata: Metadata = {
-  title: "Raf Dashboard",
+  title: "Home | RafAI",
   description: "Aplikasi manajemen rafai, tools untuk membuat AI canggih",
   authors: [
     {
@@ -38,7 +38,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body
-        className={`${poppins.variable} ${inter.variable}`}
+        className={`${poppins.variable} ${inter.variable} overflow-x-hidden`}
       >
         <ThemeProvider>
           {children}

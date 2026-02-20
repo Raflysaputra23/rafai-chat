@@ -62,6 +62,9 @@ const Navbar = () => {
                     >
                         {isDark ? <Moon size={14} className='text-primary'/> : <Sun size={14} className='text-primary'/>}
                     </Button>
+                    <Button variant={'hero'} asChild>
+                        <Link href="/login" className="text-foreground">Masuk</Link>
+                    </Button>
                     <Button onClick={toggleSidebar} variant={'hero'} className={`${sidebar && "bg-red-500 hover:bg-red-600"} w-9 h-9 md:hidden rounded-lg flex items-center justify-center`}>
                         {sidebar ? <X size={14} className="text-primary-foreground" /> : <Menu size={14} className="text-primary-foreground" />}
                     </Button>
