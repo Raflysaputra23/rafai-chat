@@ -2,25 +2,78 @@
 import FileUpload from "@/lib/fileupload";
 import { defaultConfig, MODEL, rafai, SYSTEM_INSTRUCTION } from "@/lib/rafai";
 import { Rafaiutils } from "@/lib/rafaiUtils";
+import { createClient } from "@/lib/supabase/server";
 import { headers } from "next/headers";
 
 export const POST = async (req: Request) => {
+  const supabase = await createClient();
+
   const formData = await req.formData();
-  const apikey = (await headers()).get("authorization")?.split(" ")[1] ?? null;
+  const apikey =
+    (await headers()).get("authorization")?.split(" ")[1].trim() ?? null;
 
   if (!apikey) {
-    return new Response(JSON.stringify({ message: "Unauthorized", status: 401, copyright: "@rafai.dev" }), { status: 401 });
+    return new Response(
+      JSON.stringify({
+        message: "Unauthorized",
+        status: 401,
+        copyright: "@rafai.dev",
+      }),
+      { status: 401 },
+    );
   }
 
-  const typeChat = (formData.get("typeChat") as string) ?? "chat";
+  const { data } = await supabase
+    .from("clusters")
+    .select("*")
+    .eq("apikey", apikey)
+    .maybeSingle();
+  let tokenAktif = data;
+  let tipeToken = "cluster";
+  if (!data) {
+    const { data } = await supabase
+      .from("apikeys")
+      .select("*")
+      .eq("apikey", apikey)
+      .maybeSingle();
+    tokenAktif = data;
+    tipeToken = "apikey";
+    if (!data) {
+      return new Response(
+        JSON.stringify({
+          message: "Unauthorized",
+          status: 401,
+          copyright: "@rafai.dev",
+        }),
+        { status: 401 },
+      );
+    }
+  }
+
+  // CEK LIMIT TOKEN
+  if (tokenAktif.limit < 1) {
+    return new Response(
+      JSON.stringify({
+        message: "Unauthorized",
+        limit: tokenAktif.limit,
+        status: 401,
+        copyright: "@rafai.dev",
+      }),
+      { status: 401 },
+    );
+  }
+
   const model = (formData.get("model") as string) ?? MODEL[3];
+  const typeChat = (formData.get("typeChat") as string) ?? "chat";
+  const instruksi = (formData.get("instruksi") as string) ?? SYSTEM_INSTRUCTION;
   const files = (formData.getAll("files") as File[]) ?? null;
   const prompt = (formData.get("prompt") as string) ?? null;
-  const instruksi = SYSTEM_INSTRUCTION + ", " + ((formData.get("instruksi") as string) ?? " ");
   const url = (formData.get("url") as string) ?? null;
+  const idcv = (formData.get("idcv") as string) ?? null;
 
   //   GET HISTORY PERCAKAPAN
-  const history = new Rafaiutils(apikey);
+  const history = new Rafaiutils(tokenAktif.apikey);
+  await history.loadHistory(idcv);
 
   if (typeChat == "chat") {
     try {
@@ -41,21 +94,40 @@ export const POST = async (req: Request) => {
         throw new Error("Maaf terjadi kesalahan, silahkan coba lagi.");
       }
 
-      history.addUserMessage(prompt);
-      history.addModelMessage(response.text);
-      console.log(history.getHistory());
+      if (history.size() > 0) {
+        history.addUserMessage(prompt);
+        history.addModelMessage(response.text);
+        await history.updateToDatabase(idcv);
+      } else {
+        history.addUserMessage(prompt);
+        history.addModelMessage(response.text);
+        await history.saveToDatabase(idcv);
+      }
+
+      // UPDATE LIMIT
+      if (tipeToken == "cluster") {
+        await supabase
+          .from("clusters")
+          .update({ limit: tokenAktif.limit - 1 })
+          .eq("apikey", apikey);
+      } else {
+        await supabase
+          .from("apikeys")
+          .update({ limit: tokenAktif.limit - 1 })
+          .eq("apikey", apikey);
+      }
 
       return new Response(
         JSON.stringify({
           response: response.text,
+          limit: tokenAktif.limit - 1,
           status: 200,
           copyright: "@rafai.dev",
           typeChat,
         }),
         { status: 200 },
       );
-    } catch (error) {
-      console.error(error);
+    } catch {
       return new Response(
         JSON.stringify({
           response: "RafAI sedang mengalami masalah, coba beberapa saat lagi!",
@@ -117,19 +189,41 @@ export const POST = async (req: Request) => {
         throw new Error("Maaf terjadi kesalahan, silahkan coba lagi.");
       }
 
-      history.addUserMessage(prompt);
-      history.addModelMessage(response.text);
+      if (history.size() > 0) {
+        history.addUserMessage(prompt);
+        history.addModelMessage(response.text);
+        await history.updateToDatabase(idcv);
+      } else {
+        history.addUserMessage(prompt);
+        history.addModelMessage(response.text);
+        await history.saveToDatabase(idcv);
+      }
+
+      // UPDATE LIMIT
+      if (tipeToken == "cluster") {
+        await supabase
+          .from("clusters")
+          .update({ limit: tokenAktif.limit - 1 })
+          .eq("apikey", apikey);
+      } else {
+        await supabase
+          .from("apikeys")
+          .update({ limit: tokenAktif.limit - 1 })
+          .eq("apikey", apikey);
+      }
 
       return new Response(
         JSON.stringify({
           response: response.text,
           status: 200,
+          limit: tokenAktif.limit - 1,
           copyright: "@rafai.dev",
           typeChat,
         }),
         { status: 200 },
       );
     } catch (error) {
+      console.log(error);
       return new Response(
         JSON.stringify({
           response:

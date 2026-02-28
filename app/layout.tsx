@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Poppins, Inter } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/hooks/themeContext";
+import { ThemeProvider } from "@/hooks/useTheme";
+import { AuthProvider } from "@/hooks/useAuth";
 
 const poppins = Poppins({
   weight: ["300", "400", "500"],
@@ -41,7 +42,9 @@ export default function RootLayout({
         className={`${poppins.variable} ${inter.variable} overflow-x-hidden`}
       >
         <ThemeProvider>
-          {children}
+          <AuthProvider>
+            {children}
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

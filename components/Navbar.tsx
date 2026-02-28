@@ -4,12 +4,15 @@ import { Menu, Moon, Sun, X, Zap } from 'lucide-react';
 import { useEffect, useState } from 'react'
 import { Button } from './ui/button';
 import Link from 'next/link';
-import useTheme from '@/hooks/useTheme';
+import { useTheme } from '@/hooks/useTheme';
+import { useAuth } from '@/hooks/useAuth';
 
 const Navbar = () => {
+    const { user } = useAuth();
     const { isDark, toggleTheme } = useTheme();
     const [scrolled, setScrolled] = useState(false);
     const [sidebar, setSidebar] = useState(false);
+    
 
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -63,7 +66,7 @@ const Navbar = () => {
                         {isDark ? <Moon size={14} className='text-primary'/> : <Sun size={14} className='text-primary'/>}
                     </Button>
                     <Button variant={'hero'} asChild>
-                        <Link href="/login" className="text-foreground">Masuk</Link>
+                        {!user ? <Link href="/login" className="text-foreground">Masuk</Link> : <Link href="/dashboard" className="text-foreground">Dashboard</Link>} 
                     </Button>
                     <Button onClick={toggleSidebar} variant={'hero'} className={`${sidebar && "bg-red-500 hover:bg-red-600"} w-9 h-9 md:hidden rounded-lg flex items-center justify-center`}>
                         {sidebar ? <X size={14} className="text-primary-foreground" /> : <Menu size={14} className="text-primary-foreground" />}

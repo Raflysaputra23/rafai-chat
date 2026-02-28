@@ -3,7 +3,7 @@
 import { useRef, useEffect } from "react";
 import { ChatInput } from "./ChatInput";
 import { ChatMessageBubble } from "./ChatMessageBubble";
-import { Zap, Code, Lightbulb, BookOpen } from "lucide-react";
+import { Zap, Code, Lightbulb, BookOpen} from "lucide-react";
 import type { ChatAreaProps } from "@/types/chat.d.ts";
 
 
@@ -21,7 +21,8 @@ export function ChatBody({ messages, onSend, isNew, loading }: ChatAreaProps) {
   }, [messages]);
 
   return (
-    <div className="flex-1 flex flex-col h-full min-w-0">
+    <div className="flex-1 flex flex-col h-full min-w-0 relative">
+
       {/* Messages / Welcome */}
       <div className="flex-1 overflow-y-auto scrollbar-thin">
         {isNew ? (

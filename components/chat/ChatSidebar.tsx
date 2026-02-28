@@ -1,15 +1,18 @@
-import { Plus, MessageSquare, Zap, X } from "lucide-react";
+import { Plus, MessageSquare, Zap, X, Settings } from "lucide-react";
 import type { ChatConversation, ChatSidebarProps } from "@/types/chat.d.ts";
 import { Button } from "../ui/button";
+import Modal from "../ui/modal";
+import { Label } from "../ui/label";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 
 
-export function ChatSidebar({ open, onClose, conversations, activeId, onSelect, onNewChat }: ChatSidebarProps) {
+export function ChatSidebar({ open, onClose, setModel, model, modalOpen, setModalOpen, conversations, activeId, onSelect, onNewChat }: ChatSidebarProps) {
   const today = new Date();
   const todayConvs = conversations.filter(
-    (c) => c.createdAt.toDateString() === today.toDateString()
+    (c) => new Date(c.created_at).toDateString() === today.toDateString()
   );
   const olderConvs = conversations.filter(
-    (c) => c.createdAt.toDateString() !== today.toDateString()
+    (c) => new Date(c.created_at).toDateString() !== today.toDateString()
   );
 
   return (
@@ -49,10 +52,18 @@ export function ChatSidebar({ open, onClose, conversations, activeId, onSelect, 
           <Button
             variant={"heroOutline"}
             onClick={onNewChat}
-            className="w-full flex justify-start items-center gap-2 p-5 rounded-lg bg-primary/10 hover:bg-primary/50  transition-colors text-sm font-medium text-foreground"
+            className="w-full flex justify-start items-center gap-2 p-5 rounded-lg bg-primary/10 hover:bg-primary/50  transition-colors text-sm font-medium text-foreground mb-2"
           >
             <Plus className="h-4 w-4" />
             Percakapan Baru
+          </Button>
+          <Button
+            variant={"heroOutline"}
+            onClick={() => setModalOpen(true)}
+            className="w-full flex justify-start items-center gap-2 p-5 rounded-lg bg-primary/10 hover:bg-primary/50  transition-colors text-sm font-medium text-foreground"
+          >
+            <Settings className="h-4 w-4" />
+            Pengaturan Chat
           </Button>
         </div>
 
@@ -77,6 +88,41 @@ export function ChatSidebar({ open, onClose, conversations, activeId, onSelect, 
           )}
         </div>
       </aside>
+      <Modal showForm={modalOpen} size="md" resetForm={() => setModalOpen(false)}>
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-lg font-bold text-foreground">
+            Pengaturan Chat
+          </h3>
+          <button onClick={() => setModalOpen(false)} className="text-muted-foreground hover:text-foreground">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <h2 className="text-muted-foreground mb-6 text-sm">Pilih model yang akan digunakan</h2>
+
+        <section className="space-y-6">
+          <div className="space-y-2 relative">
+            <Label className="text-foreground">Model</Label>
+            <Select defaultValue={model} onValueChange={setModel}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Pilih model" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectItem value="gemini-2.5-flash">gemini-2.5-flash</SelectItem>
+                  <SelectItem value="gemini-2.5-flash-lite">gemini-2.5-flash-lite</SelectItem>
+                  <SelectItem disabled value="gemini-3-flash-preview" className="">gemini-3-flash-preview <span className="bg-primary rounded-md p-1 px-2">Pro</span></SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex items-center">
+            <Button type="button" variant="outline" className="flex-1" onClick={() => setModalOpen(false)}>
+              Batal
+            </Button>
+          </div>
+        </section>
+      </Modal>
     </>
   );
 }

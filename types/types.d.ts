@@ -16,7 +16,7 @@ export type Database = {
     Tables: {
       clusters: {
         Row: {
-          api_key: string
+          apikey: string
           created_at: string
           description: string | null
           id: string
@@ -26,7 +26,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          api_key?: string
+          apikey?: string
           created_at?: string
           description?: string | null
           id?: string
@@ -36,7 +36,7 @@ export type Database = {
           user_id: string
         }
         Update: {
-          api_key?: string
+          apikey?: string
           created_at?: string
           description?: string | null
           id?: string

@@ -8,12 +8,13 @@ import FeaturesSection from "../FeaturesSection";
 import DocsSection from "../DocsSection";
 import ContactSection from "../ContactSection";
 import Footer from "../Footer";
+import { useAuth } from "@/hooks/useAuth";
 
 
 const LandingPage = () => {
-    const [loading, setLoading] = useState<boolean>(true);
+    const { loading: authLoading  } = useAuth();
     
-    return loading ? <LoadingScreen onFinish={() => setLoading(false)} /> : (
+    return authLoading ? <LoadingScreen statusLoading={authLoading} /> : (
         <div className="min-h-screen bg-background">
             <Navbar />
             <HeroSection />

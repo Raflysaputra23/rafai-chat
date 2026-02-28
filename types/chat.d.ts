@@ -1,7 +1,7 @@
 export interface ChatConversation {
   id: string;
   title: string;
-  createdAt: Date;
+  created_at: Date;
 }
 
 export interface ChatMessage {
@@ -18,6 +18,10 @@ export interface ChatSidebarProps {
   activeId: string | null;
   onSelect: (id: string) => void;
   onNewChat: () => void;
+  setModel: (model: string) => void;
+  model: string;
+  modalOpen: boolean;
+  setModalOpen: (open: boolean) => void;
 }
 
 interface ChatInputProps {
