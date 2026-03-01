@@ -39,7 +39,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body
-        className={`${poppins.variable} ${inter.variable} overflow-x-hidden`}
+        className={`${poppins.variable} ${inter.variable} overflow-x-hidden overflow-y-auto`}
       >
         <ThemeProvider>
           <AuthProvider>

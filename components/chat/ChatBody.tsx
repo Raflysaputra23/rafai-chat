@@ -24,7 +24,7 @@ export function ChatBody({ messages, onSend, isNew, loading }: ChatAreaProps) {
     <div className="flex-1 flex flex-col h-full min-w-0 relative">
 
       {/* Messages / Welcome */}
-      <div className="flex-1 overflow-y-auto scrollbar-thin">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-transparent scrollbar-thumb-primary">
         {isNew ? (
           <div className="lg:flex lg:flex-col lg:justify-center lg:items-center lg:h-full px-6 animate-fade-in py-6">
             <div className="h-16 w-16 mx-auto rounded-2xl bg-primary/15 flex items-center justify-center mb-10 glow-primary">

@@ -20,7 +20,7 @@ const Chatbot = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loadingText, setLoadingText] = useState(false);
   const [apikey, setApikey] = useState<string>("");
-  const [model, setModel] = useState<string>("gemini-2.5-flash");
+  const [model, setModel] = useState<string>("gemini-3-flash-preview");
   const [openModal, setOpenModal] = useState(false);
   const { isDark } = useTheme();
 
@@ -112,9 +112,9 @@ const Chatbot = () => {
     }
   };
 
-  const handleSendMessage = async (content: string, files?: File[]) => {
+  const handleSendMessage = async (content: string, files?: File[], link?: string) => {
     const supabase = createClient();
-    const userMsg: ChatMessage = { role: "user", parts: [{ text: content }] };
+    const userMsg: ChatMessage = { role: "user", parts: [{ text: `${link && `(Link Youtube: ${link})`} ${content}` }] };
     setMessages((prev) => [...prev, userMsg]);
     setLoadingText(true);
 
@@ -137,7 +137,7 @@ const Chatbot = () => {
     }
 
     // Mock bot response
-    const response = await handleRespon(content, idcv, files);
+    const response = await handleRespon(content, idcv, files, link);
     setLoadingText(false);
     if (response) {
       const botMsg: ChatMessage = { role: "model", parts: [{ text: response }] };
@@ -145,16 +145,27 @@ const Chatbot = () => {
     }
   };
 
-  const handleRespon = async (prompt: string, idcv?: string | null, file?: File[]) => {
+  const handleRespon = async (prompt: string, idcv?: string | null, file?: File[], link?:string) => {
     try {
       const formdata = new FormData();
       formdata.append("prompt", prompt);
       formdata.append("idcv", idcv ?? "");
       formdata.append("model", model);
+      if(link) {
+        const ytRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/(watch\?v=|shorts\/|embed\/)?[A-Za-z0-9_-]{11}.*$/;
+        if(!ytRegex.test(link)) {
+          if(!Boolean(messages.length)) await handleDeleteConversation(idcv ?? "");
+          return `Link youtube Tidak Valid`;
+        }
+        formdata.append("url", link);
+        formdata.append("typeChat", "multimodal");
+      };
       if (file && file.length > 0) {
         file.forEach((f) => formdata.append("files", f));
         formdata.append("typeChat", "multimodal");
       }
+      
+
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_URL_DOMAIN}/api/v1`, {
         method: "POST",

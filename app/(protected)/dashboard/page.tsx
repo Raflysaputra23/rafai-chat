@@ -2,8 +2,9 @@
 "use client"
 
 import { useActionState, useEffect, useState } from "react";
-import { motion} from "framer-motion";
-import { Plus, Copy, Check, Trash2, Edit2, X,
+import { motion } from "framer-motion";
+import {
+  Plus, Copy, Check, Trash2, Edit2, X,
   Code2, Terminal,
   ChartBar,
 } from "lucide-react";
@@ -30,7 +31,7 @@ type Cluster = Tables<"clusters">;
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
   const { isDark } = useTheme();
-  const [state, formAction]:any = useActionState(formClusterValidation, null);
+  const [state, formAction]: any = useActionState(formClusterValidation, null);
 
   const [clusters, setClusters] = useState<Cluster[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,11 +42,12 @@ const Dashboard = () => {
   const [systemPrompt, setSystemPrompt] = useState("");
   const [selectedCluster, setSelectedCluster] = useState<Cluster | null>(null);
   const [codeTab, setCodeTab] = useState<"javascript" | "python">("javascript");
-  const [showModalCluster, setShowModalCluster] = useState({show: false, cluster: ""});
-  const [error, setError] = useState<any>(null);
+  const [showModalCluster, setShowModalCluster] = useState({ show: false, cluster: "" });
+  const [error, setError] = useState<boolean>(false);
+  const [message, setMessage] = useState<string | null>(null);
 
   const fetchClusters = async () => {
-    if(user) {
+    if (user) {
       const supabase = createClient();
       const { data, error } = await supabase
         .from("clusters")
@@ -63,9 +65,9 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-      (async () => {
-        await fetchClusters();
-      })();
+    (async () => {
+      await fetchClusters();
+    })();
   }, [user]);
 
   useEffect(() => {
@@ -75,14 +77,18 @@ const Dashboard = () => {
           try {
             const res = await handleSave();
             if (!res) throw "Data gagal disimpan";
+            setMessage("Data berhasil disimpan");
+            setError(false);
           } catch (error: unknown) {
-            setError(error);
+            setMessage(error instanceof Error ? error.message : "Data gagal disimpan");
+            setError(true);
           } finally {
             resetForm();
           }
         })();
       } else {
-        setError(state.error);
+        setMessage(state.message)
+        setError(true);
       }
     }
   }, [state]);
@@ -133,7 +139,7 @@ const Dashboard = () => {
     if (selectedCluster?.id === showModalCluster.cluster) setSelectedCluster(null);
     // toast({ title: "Cluster dihapus!" });
     fetchClusters();
-    setShowModalCluster({show: false, cluster: ""});
+    setShowModalCluster({ show: false, cluster: "" });
   };
 
   const handleEdit = (cluster: Cluster) => {
@@ -150,6 +156,11 @@ const Dashboard = () => {
     setName("");
     setDescription("");
     setSystemPrompt("");
+    const timeout = setTimeout(() => {
+      setMessage(null);
+      setError(false);
+      clearTimeout(timeout);
+    }, 4000);
   };
 
   const [copied, setCopied] = useState(false);
@@ -201,11 +212,11 @@ print(data["reply"])`;
   }
 
   return (
-    <div className={`min-h-screen bg-background ${isDark && "dark"}`}>
+    <div className={`min-h-dvh overflow-hidden bg-background ${isDark && "dark"}`}>
       <Navbar />
 
-      <div className="container mx-auto px-6 py-8">
-        <div className="flex items-center justify-between mb-8">
+      <div className="container mx-auto px-3 lg:px-6 py-8">
+        <div className="flex flex-col items-start gap-4 lg:flex-row lg:items-center justify-between mb-8">
           <div>
             <h1 className="text-2xl font-bold text-foreground">Cluster API</h1>
             <p className="text-muted-foreground text-sm">Buat dan kelola cluster chatbot kamu</p>
@@ -246,6 +257,9 @@ print(data["reply"])`;
               <X className="w-5 h-5" />
             </button>
           </div>
+          {message && <div className={`flex items-center justify-center ${(state?.success && !error) ? 'bg-green-500/10 border-green-500/30' : 'bg-red-500/10 border-red-500/30'} p-4 rounded-md border mb-4`}>
+            <p className={`text-xs ${(state?.success && !error) ? 'text-green-500/50' : 'text-red-500/50'}`}>{message}</p>
+          </div>}
 
           <form action={formAction} className="space-y-6">
             <div className="space-y-2 relative">
@@ -284,6 +298,7 @@ print(data["reply"])`;
                 required
                 name="system_prompt"
                 rows={5}
+                className="resize-none h-22 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-transparent scrollbar-thumb-primary"
               />
               <p className='text-xs text-destructive absolute -bottom-4.5 left-1'>{state?.error?.system_prompt}</p>
 
@@ -316,7 +331,7 @@ print(data["reply"])`;
             </Button>
           </motion.div>
         ) : (
-          <div className="grid lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Cluster list */}
             <div className="lg:col-span-1 space-y-3">
               {clusters.map((cluster) => (
@@ -345,7 +360,7 @@ print(data["reply"])`;
                         <Edit2 className="w-3.5 h-3.5" />
                       </button>
                       <Button variant={"heroOutline"}
-                        onClick={(e) => { e.stopPropagation(); setShowModalCluster({show: true, cluster: cluster.id}); }}
+                        onClick={(e) => { e.stopPropagation(); setShowModalCluster({ show: true, cluster: cluster.id }); }}
                         className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
                       >
                         <Trash2 className="w-3.5 h-3.5" />

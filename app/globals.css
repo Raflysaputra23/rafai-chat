@@ -3,6 +3,7 @@
 @import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
+@plugin 'tailwind-scrollbar';
 
 :root {
   --radius: 0.625rem;
@@ -185,6 +186,8 @@
     background-clip: padding-box;
     position: relative;
   }
+
+
 
   .gradient-border::before {
     content: "";

@@ -15,7 +15,7 @@ const LandingPage = () => {
     const { loading: authLoading  } = useAuth();
     
     return authLoading ? <LoadingScreen statusLoading={authLoading} /> : (
-        <div className="min-h-screen bg-background">
+        <div className="min-h-screen bg-background overflow-hidden">
             <Navbar />
             <HeroSection />
             <FeaturesSection />

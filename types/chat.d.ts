@@ -25,7 +25,7 @@ export interface ChatSidebarProps {
 }
 
 interface ChatInputProps {
-  onSend: (content: string, files?: File[]) => void;
+  onSend: (content: string, files?: File[], link?: string) => void;
 }
 
 interface ChatAreaProps {

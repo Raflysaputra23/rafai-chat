@@ -63,7 +63,7 @@ export const POST = async (req: Request) => {
     );
   }
 
-  const model = (formData.get("model") as string) ?? MODEL[3];
+  const model = (formData.get("model") as string) ?? MODEL[1];
   const typeChat = (formData.get("typeChat") as string) ?? "chat";
   const instruksi = (formData.get("instruksi") as string) ?? SYSTEM_INSTRUCTION;
   const files = (formData.getAll("files") as File[]) ?? null;
@@ -127,7 +127,8 @@ export const POST = async (req: Request) => {
         }),
         { status: 200 },
       );
-    } catch {
+    } catch (error) {
+      console.log(error);
       return new Response(
         JSON.stringify({
           response: "RafAI sedang mengalami masalah, coba beberapa saat lagi!",
@@ -141,17 +142,12 @@ export const POST = async (req: Request) => {
       let contents: any = "";
 
       if (url) {
-        const response = await fetch(url);
-        const imageArrayBuffer = await response.arrayBuffer();
-        const buffer = Buffer.from(imageArrayBuffer).toString("base64");
-
         contents = [
           {
-            inlineData: {
-              mimeType: "image/jpeg",
-              data: buffer,
+            fileData: {
+              fileUri: url,
             },
-          },
+          }
         ];
       } else {
         // convert file to buffer

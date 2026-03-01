@@ -13,7 +13,7 @@ export function ChatMessageBubble({ message }: { message: ChatMessage }) {
       )}
 
       <div
-        className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+        className={`max-w-[85%] overflow-x-auto scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-transparent scrollbar-thumb-primary rounded-2xl px-4 py-3 text-sm leading-relaxed ${
           isUser
             ? "border border-primary/40 text-primary hover:bg-primary/10 rounded-br-md"
             : "bg-card border border-border text-foreground rounded-bl-md"

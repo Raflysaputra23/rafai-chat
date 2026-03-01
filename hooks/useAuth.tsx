@@ -43,10 +43,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     //     setProfile(data as Profile | null);
     // };
 
-    const generateToken = async (userId: string | undefined) => {
+    const generateToken = async (id_user: string | undefined) => {
         const apikey = crypto.randomBytes(32).toString("hex");
-
-        const { error } = await supabase.from("apikey").insert({ apikey, jenis: "biasa", user_id: userId, limit: 100 });
+        const { error } = await supabase.from("apikeys").insert({ apikey, jenis: "biasa", id_user, limit: 100 });
         return { error };
     };
 
@@ -80,8 +79,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         });
 
         if (!error && data) {
-            const { error: tokenError } = await generateToken(data.user?.id);
-            if (tokenError) return { error: tokenError };
+            const { error } = await generateToken(data.user?.id);
+            if (error) return { error };
         }
         return { error };
     };

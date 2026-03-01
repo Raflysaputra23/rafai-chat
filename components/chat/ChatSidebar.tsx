@@ -4,6 +4,7 @@ import { Button } from "../ui/button";
 import Modal from "../ui/modal";
 import { Label } from "../ui/label";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import Link from "next/link";
 
 
 export function ChatSidebar({ open, onClose, setModel, model, modalOpen, setModalOpen, conversations, activeId, onSelect, onNewChat }: ChatSidebarProps) {
@@ -37,12 +38,12 @@ export function ChatSidebar({ open, onClose, setModel, model, modalOpen, setModa
         <div className="shrink-0 p-4">
           {/* Logo */}
           <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-2">
+            <Link href={"/"} className="flex items-center gap-2">
               <div className="h-9 w-9 rounded-lg bg-primary flex items-center justify-center glow-primary">
                 <Zap className="h-5 w-5 text-primary-foreground" />
               </div>
               <span className="text-lg font-bold text-sidebar-foreground tracking-tight">RafAI</span>
-            </div>
+            </Link>
             <Button onClick={onClose} variant={"hero"} className="w-10 h-10 rounded-lg md:hidden">
               <X className="h-6 w-6" />
             </Button>
@@ -108,9 +109,9 @@ export function ChatSidebar({ open, onClose, setModel, model, modalOpen, setModa
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
+                  <SelectItem value="gemini-3-flash-preview">gemini-3-flash-preview <span className="bg-primary rounded-md p-1 px-2">Pro</span></SelectItem>
                   <SelectItem value="gemini-2.5-flash">gemini-2.5-flash</SelectItem>
                   <SelectItem value="gemini-2.5-flash-lite">gemini-2.5-flash-lite</SelectItem>
-                  <SelectItem disabled value="gemini-3-flash-preview" className="">gemini-3-flash-preview <span className="bg-primary rounded-md p-1 px-2">Pro</span></SelectItem>
                 </SelectGroup>
               </SelectContent>
             </Select>
