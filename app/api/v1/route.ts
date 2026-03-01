@@ -11,7 +11,7 @@ export const POST = async (req: Request) => {
   const formData = await req.formData();
   const apikey =
     (await headers()).get("authorization")?.split(" ")[1].trim() ?? null;
-
+  
   if (!apikey) {
     return new Response(
       JSON.stringify({
@@ -43,7 +43,7 @@ export const POST = async (req: Request) => {
         JSON.stringify({
           message: "Unauthorized",
           status: 401,
-          copyright: "@rafai.dev",
+          copyright: "@rafai.dev"
         }),
         { status: 401 },
       );

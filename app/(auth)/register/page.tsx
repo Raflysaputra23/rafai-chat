@@ -14,7 +14,7 @@ import ButtonForm from '@/components/loading/ButtonForm';
 import { useAuth } from '@/hooks/useAuth';
 
 const Register = () => {
-    const { signUp } = useAuth();
+    const { signUp, user } = useAuth();
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -39,6 +39,12 @@ const Register = () => {
             clearTimeout(timeout);
         }, 4000);
     }
+    
+    useEffect(() => {
+        if(user) {
+            router.push("/login");
+        }
+    }, [user, router]);
 
     useEffect(() => {
         if (state) {
@@ -49,7 +55,6 @@ const Register = () => {
                         if (error) throw error;
                         setMessage("Registrasi Berhasil");
                         setError(false);
-                        router.push("/login");
                     } catch (error: unknown) {
                         setMessage(error instanceof Error ? error.message : "Registrasi Gagal");
                         setError(true);

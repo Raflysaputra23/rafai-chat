@@ -14,7 +14,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 
 const Login = () => {
-    const { signIn } = useAuth();
+    const { signIn, user } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(true);
@@ -36,6 +36,12 @@ const Login = () => {
     }
 
     useEffect(() => {
+        if(user) {
+            router.push("/dashboard");
+        }
+    }, [user, router]);
+
+    useEffect(() => {
         if (state) {
             if (state.success) {
                 (async () => {
@@ -44,7 +50,6 @@ const Login = () => {
                         if (error) throw error;
                         setMessage("Login Berhasil");
                         setError(false);
-                        router.push("/dashboard");
                     } catch (error: unknown) {
                         setMessage(error instanceof Error ? error.message : "Login Gagal");
                         setError(true);
