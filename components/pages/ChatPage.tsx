@@ -11,6 +11,8 @@ import { useTheme } from "@/hooks/useTheme";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { v4 as uuidv4 } from "uuid";
+import { toastError, toastSuccess } from "@/lib/toast";
+import { useRouter } from "next/navigation";
 
 
 const ChatPage = () => {
@@ -25,6 +27,7 @@ const ChatPage = () => {
   const [model, setModel] = useState<string>("gemini-3-flash-preview");
   const [openModal, setOpenModal] = useState(false);
   const { isDark } = useTheme();
+  const router = useRouter();
 
   useEffect(() => {
     const handleResize = () => {
@@ -74,12 +77,17 @@ const ChatPage = () => {
   const getApikey = async () => {
     const supabase = createClient();
     if (user) {
-      const { data } = await supabase.from("apikeys")
+      const { error, data } = await supabase.from("apikeys")
         .select("*")
         .eq("id_user", user.id)
-        .maybeSingle();
-      if (data) {
-        setApikey(data.apikey);
+        .limit(1);
+        if(error) {
+            toastError("Anda harus membuat api key terlebih dahulu!");
+            router.push("/dashboard");
+            return;
+        }
+      if (!error && data) {
+        setApikey(data[0].apikey);
       }
     }
   }
@@ -111,7 +119,7 @@ const ChatPage = () => {
     const supabase = createClient();
     const { error } = await supabase.from("conversations").delete().eq("id", id);
     if (!error) {
-      setConversations((prev) => prev.filter((conv) => conv.id !== id));
+        setConversations((prev) => prev.filter((conv) => conv.id !== id));
     }
   };
 

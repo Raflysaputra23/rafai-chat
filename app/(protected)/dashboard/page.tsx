@@ -7,6 +7,7 @@ import {
   Plus, Copy, Check, Trash2, Edit2, X,
   Code2, Terminal,
   MessageCircleMore,
+  Key,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ import { formClusterValidation } from "@/lib/formValidation";
 import ButtonForm from "@/components/loading/ButtonForm";
 import crypto from "crypto";
 import Link from "next/link";
+import { toastError, toastSuccess } from "@/lib/toast";
 
 
 
@@ -42,6 +44,8 @@ const Dashboard = () => {
   const [showModalCluster, setShowModalCluster] = useState({ show: false, cluster: "" });
   const [error, setError] = useState<boolean>(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [showModalApikey, setShowModalApikey] = useState<boolean>(false);
+  const [apikey, setApikey] = useState<any[]>([]);
 
   const fetchClusters = async () => {
     if (user) {
@@ -55,7 +59,7 @@ const Dashboard = () => {
         setClusters(data);
         if (!selectedCluster && data.length > 0) setSelectedCluster(data[0]);
       } else {
-        // toast({ title: "Error", description: error.message, variant: "destructive" });
+        toastError("Cluster gagal dimuat!")
       }
       setLoading(false);
     }
@@ -64,6 +68,7 @@ const Dashboard = () => {
   useEffect(() => {
     (async () => {
       await fetchClusters();
+      await getApikey();
     })();
   }, [user]);
 
@@ -101,21 +106,20 @@ const Dashboard = () => {
         .update({ name, description, system_prompt: systemPrompt })
         .eq("id", editingCluster.id);
       if (error) {
-        // toast({ title: "Error", description: error.message, variant: "destructive" });
+        toastError("Cluster gagal diperbarui!");
         return false;
       }
-      // toast({ title: "Cluster diperbarui!" });
+      toastSuccess("Cluster berhasil diperbarui!");
     } else {
       const apikey = crypto.randomBytes(32).toString("hex");
       const { error } = await supabase
         .from("clusters")
         .insert({ name, description, system_prompt: systemPrompt, user_id: user.id, apikey });
       if (error) {
-        console.log(error);
-        // toast({ title: "Error", description: error.message, variant: "destructive" });
+        toastError("Cluster gagal dibuat!");
         return false;
       }
-      // toast({ title: "Cluster dibuat!" });
+      toastSuccess("Cluster berhasil dibuat!");
     }
 
     resetForm();
@@ -130,14 +134,61 @@ const Dashboard = () => {
       .delete()
       .eq("id", showModalCluster.cluster);
     if (error) {
-      // toast({ title: "Error", description: error.message, variant: "destructive" });
+      toastError("Cluster gagal dihapus!");
       return;
     }
     if (selectedCluster?.id === showModalCluster.cluster) setSelectedCluster(null);
-    // toast({ title: "Cluster dihapus!" });
+    toastSuccess("Cluster berhasil dihapus!");
     fetchClusters();
     setShowModalCluster({ show: false, cluster: "" });
   };
+
+  const generateToken = async () => {
+    if (user) {
+      const supabase = createClient();
+      const apikey = crypto.randomBytes(32).toString("hex");
+      const { error } = await supabase.from("apikeys").insert({ apikey, jenis: "biasa", id_user: user.id, limit: 100 });
+      return error;
+    }
+  };
+
+  const createApikey = async () => {
+    if(apikey.length >= 5) {
+      toastError("Anda hanya dapat membuat maksimal 5 api key!");
+      return;
+    }
+    const error = await generateToken();
+    if (error) {
+      toastError("Api key gagal dibuat!");
+      return;
+    }
+    toastSuccess("API key berhasil dibuat!");
+    await getApikey();
+    setShowModalApikey(false);
+  }
+
+  const handleDeleteApikey = async (id: string) => {
+    const supabase = createClient();
+    const { error } = await supabase.from("apikeys").delete().eq("id", id);
+    if (error) {
+      toastError("Api key gagal dihapus!");
+      return;
+    }
+    toastSuccess("API key berhasil dihapus!");
+    await getApikey();
+  }
+
+  const getApikey = async () => {
+    const supabase = createClient();
+    if (user) {
+      const { error, data } = await supabase.from("apikeys")
+        .select("*")
+        .eq("id_user", user.id)
+      if (!error && data) {
+        setApikey(data);
+      }
+    }
+  }
 
   const handleEdit = (cluster: Cluster) => {
     setEditingCluster(cluster);
@@ -164,6 +215,7 @@ const Dashboard = () => {
   const copyCode = (code: string) => {
     navigator.clipboard.writeText(code);
     setCopied(true);
+    toastSuccess("Code copied to clipboard");
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -216,13 +268,16 @@ print(data["reply"])`;
           <p className="text-muted-foreground text-sm">Buat dan kelola cluster chatbot kamu</p>
         </div>
         <div className="space-x-4">
+          <Button variant="heroOutline" size={"lg"} onClick={() => setShowModalApikey(true)}>
+            <Key className="w-4 h-4" /> Buat Apikey
+          </Button>
+          <Button variant="heroOutline" size={"lg"} onClick={() => { resetForm(); setShowForm(true); }}>
+            <Plus className="w-4 h-4" /> Buat Cluster
+          </Button>
           <Button variant="heroOutline" size={"lg"} asChild >
             <Link href={"/chat"}>
               <MessageCircleMore className="w-4 h-4" /> Chatbot
             </Link>
-          </Button>
-          <Button variant="heroOutline" size={"lg"} onClick={() => { resetForm(); setShowForm(true); }}>
-            <Plus className="w-4 h-4" /> Buat Cluster
           </Button>
         </div>
       </div>
@@ -238,6 +293,51 @@ print(data["reply"])`;
           <Button onClick={handleDelete} variant="hero" className="bg-red-500 border  cursor-pointer hover:bg-red-500/80 text-foreground" size={"default"}>
             Hapus
           </Button>
+        </div>
+      </Modal>
+
+      {/* Information Apikey */}
+      <Modal showForm={showModalApikey} size="md" resetForm={() => setShowModalApikey(false)}>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-bold text-foreground">
+            Buat Apikey
+          </h3>
+          <button onClick={() => setShowModalApikey(false)} className="text-muted-foreground hover:text-foreground">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <Button variant="hero" size={"sm"} className="text-sm" onClick={createApikey}>
+          <Key className="w-4 h-4" /> Buat Apikey
+        </Button>
+        <div className="space-y-4 mt-6">
+          <div className="space-y-2 relative">
+            <Label className="text-foreground">Apikey Anda</Label>
+            <div className="bg-background rounded-lg p-3 space-y-2 shadow">
+              {apikey.length > 0 && apikey.map(a =>
+                <div key={a.apikey} className="flex items-center gap-2">
+                  <Input className="w-full" readOnly value={a.apikey} />
+                  <Button variant={"heroOutline"}
+                    onClick={() => copyCode(a.apikey)}
+                    className="p-1.5 rounded-lg hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    <Copy className="w-3.5 h-3.5" onClick={() => copyCode(a.apikey)} />
+                  </Button>
+                  <Button variant={"heroOutline"}
+                    onClick={() => handleDeleteApikey(a.id)}
+                    className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
+              )}
+              {apikey.length <= 0 && (
+                <>
+                  <h3 className="text-lg font-semibold text-foreground mb-2 text-center">Tidak ada apikey</h3>
+                  <p className="text-muted-foreground text-sm text-center">Buat apikey pertama kamu untuk mulai menggunakan API Chatbot</p>
+                </>
+              )}
+            </div>
+          </div>
         </div>
       </Modal>
 

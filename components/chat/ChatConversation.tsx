@@ -6,6 +6,7 @@ import Modal from "../ui/modal";
 import { Button } from "../ui/button";
 import React, { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { toastSuccess } from "@/lib/toast";
 
 
 const ConversationItem = ({ conv, active, onSelect, setConversations, onCloseSidebar }: { conv: ChatConversation; active: boolean; onSelect: (id: string) => void, setConversations: (callback: (prev: ChatConversation[]) => ChatConversation[]) => void; onCloseSidebar: (prev: boolean) => void }) => {
@@ -17,6 +18,7 @@ const ConversationItem = ({ conv, active, onSelect, setConversations, onCloseSid
         const supabase = createClient();
         const { error } = await supabase.from("conversations").delete().eq("id", conv.id);
         if (!error) {
+            toastSuccess("History berhasil dihapus!");
             setConversations((prev)=> prev.filter((conv) => conv.id !== id));
         }
     }
