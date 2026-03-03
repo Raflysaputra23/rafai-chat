@@ -42,7 +42,7 @@ const Register = () => {
     
     useEffect(() => {
         if(user) {
-            router.push("/login");
+            router.push("/dashboard");
         }
     }, [user, router]);
 

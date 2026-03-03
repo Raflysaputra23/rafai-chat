@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from "react";
 import { LoadingScreen } from "../loading/LoadingScreen";
 import Navbar from "../Navbar";
 import HeroSection from "../HeroSection";
@@ -12,9 +11,11 @@ import { useAuth } from "@/hooks/useAuth";
 
 
 const LandingPage = () => {
-    const { loading: authLoading  } = useAuth();
+    const { loading: authLoading } = useAuth();
+
+    if(authLoading) return <LoadingScreen statusLoading={authLoading} />
     
-    return authLoading ? <LoadingScreen statusLoading={authLoading} /> : (
+    return (
         <div className="min-h-screen bg-background overflow-hidden">
             <Navbar />
             <HeroSection />
@@ -22,7 +23,8 @@ const LandingPage = () => {
             <DocsSection />
             <ContactSection />
             <Footer />
-        </div>);
+        </div>
+    );
 }
 
 export default LandingPage;

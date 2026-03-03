@@ -45,13 +45,13 @@ const Footer = () => {
                             API gateway AI terbaik untuk developer Indonesia. Satu API key, akses semua model AI.
                         </p>
                         <div className="flex items-center gap-3">
-                            <Link href="#" className="group w-9 h-9 bg-primary-foreground border border-border rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/80 transition-colors">
+                            <Link href="github.com/Raflysaputra23" className="group w-9 h-9 bg-primary-foreground border border-border rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/80 transition-colors">
                                 <Github className="w-4 h-4 group-hover:text-primary" />
                             </Link>
                             <Link href="#" className="group w-9 h-9 bg-primary-foreground border border-border rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/80 transition-colors">
                                 <Twitter className="w-4 h-4 group-hover:text-primary" />
                             </Link>
-                            <Link href="#" className="group w-9 h-9 bg-primary-foreground border border-border rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/80 transition-colors">
+                            <Link href="mailto:966raflisaputra@gmail.com" className="group w-9 h-9 bg-primary-foreground border border-border rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/80 transition-colors">
                                 <Mail className="w-4 h-4 group-hover:text-primary" />
                             </Link>
                         </div>

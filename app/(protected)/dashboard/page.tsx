@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import {
   Plus, Copy, Check, Trash2, Edit2, X,
   Code2, Terminal,
-  ChartBar,
+  MessageCircleMore,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -224,11 +224,11 @@ print(data["reply"])`;
           <div className="space-x-4">
             <Button variant="heroOutline" size={"lg"} asChild >
               <Link href={"/chat"}>
-                <ChartBar className="w-4 h-4 mr-2" /> Chatbot
+                <MessageCircleMore className="w-4 h-4" /> Chatbot
               </Link>
             </Button>
             <Button variant="heroOutline" size={"lg"} onClick={() => { resetForm(); setShowForm(true); }}>
-              <Plus className="w-4 h-4 mr-2" /> Buat Cluster
+              <Plus className="w-4 h-4" /> Buat Cluster
             </Button>
           </div>
         </div>
@@ -353,12 +353,12 @@ print(data["reply"])`;
                       )}
                     </div>
                     <div className="flex gap-1 ml-2">
-                      <button
+                      <Button variant={"heroOutline"}
                         onClick={(e) => { e.stopPropagation(); handleEdit(cluster); }}
-                        className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+                        className="p-1.5 rounded-lg hover:bg-yellow-500/10 text-muted-foreground hover:text-yellow-500 transition-colors"
                       >
                         <Edit2 className="w-3.5 h-3.5" />
-                      </button>
+                      </Button>
                       <Button variant={"heroOutline"}
                         onClick={(e) => { e.stopPropagation(); setShowModalCluster({ show: true, cluster: cluster.id }); }}
                         className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
@@ -427,7 +427,7 @@ print(data["reply"])`;
                   </div>
 
                   {/* Code block */}
-                  <div className="p-4 bg-secondary/30 overflow-x-auto">
+                  <div className="p-4 bg-secondary/30 overflow-x-auto scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-transparent scrollbar-thumb-primary">
                     <pre className="text-sm font-mono leading-relaxed">
                       <code className="text-foreground">
                         {codeTab === "javascript" ? getJsCode(selectedCluster) : getPyCode(selectedCluster)}

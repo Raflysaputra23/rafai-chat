@@ -22,6 +22,7 @@ export interface ChatSidebarProps {
   model: string;
   modalOpen: boolean;
   setModalOpen: (open: boolean) => void;
+  setConversations: (callback: (prev: ChatConversation[]) => ChatConversation[]) => void;
 }
 
 interface ChatInputProps {

@@ -4,6 +4,7 @@ import { motion } from "framer-motion"
 import { Check, Copy } from "lucide-react";
 import { useState } from "react";
 import { Button } from "./ui/button";
+import Link from "next/link";
 
 interface CodeExample {
     title: string;
@@ -15,32 +16,26 @@ const codeExamples = [
     {
         title: "2. Kirim Request Pertama",
         language: "javascript",
-        code: `const response = await fetch("https://api.rafai.id/v1/chat", {
+        code: `const response = await fetch("https://rafai-chat.vercel.app/api/v1", {
   method: "POST",
   headers: {
-    "Authorization": "Bearer YOUR_API_KEY",
-    "Content-Type": "application/json"
+    "Authorization": "Bearer YOUR_API_KEY"
   },
-  body: JSON.stringify({
-    model: "gpt-4",
-    messages: [{ role: "user", content: "Halo RafAI!" }]
-  })
+  body: formdata
 });
 
 const data = await response.json();
-console.log(data.choices[0].message.content);`,
+console.log(data.response);`,
     },
     {
         title: "3. Streaming Response",
         language: "javascript",
         code: `const stream = await fetch("https://api.rafai.id/v1/chat/stream", {
   method: "POST",
-  headers: { "Authorization": "Bearer YOUR_API_KEY" },
-  body: JSON.stringify({
-    model: "claude-3",
-    messages: [{ role: "user", content: "Jelaskan AI" }],
-    stream: true
-  })
+  headers: { 
+  "Authorization": "Bearer YOUR_API_KEY" 
+  },
+  body: formdata
 });`,
     },
 ];
@@ -114,7 +109,11 @@ const DocsSection = () => {
                         transition={{ duration: 0.6 }}
                         className="text-start"
                     >
-                        <Button variant={"heroOutline"} className="text-xl p-6">Dapatkan API Key</Button>
+                        <Button variant={"heroOutline"} className="text-xl p-6">
+                            <Link href={"/dashboard"}>
+                                Dapatkan API Key
+                            </Link>
+                        </Button>
                     </motion.div>
                 </div>
 

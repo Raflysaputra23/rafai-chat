@@ -1,13 +1,14 @@
-import { Plus, MessageSquare, Zap, X, Settings } from "lucide-react";
-import type { ChatConversation, ChatSidebarProps } from "@/types/chat.d.ts";
+import { Plus, Zap, X, Settings } from "lucide-react";
+import type { ChatSidebarProps } from "@/types/chat.d.ts";
 import { Button } from "../ui/button";
 import Modal from "../ui/modal";
 import { Label } from "../ui/label";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import Link from "next/link";
+import ConversationItem from "./ChatConversation";
 
 
-export function ChatSidebar({ open, onClose, setModel, model, modalOpen, setModalOpen, conversations, activeId, onSelect, onNewChat }: ChatSidebarProps) {
+export function ChatSidebar({ open, onClose, setModel, model, modalOpen, setModalOpen, conversations, activeId, onSelect, onNewChat, setConversations }: ChatSidebarProps) {
   const today = new Date();
   const todayConvs = conversations.filter(
     (c) => new Date(c.created_at).toDateString() === today.toDateString()
@@ -69,12 +70,12 @@ export function ChatSidebar({ open, onClose, setModel, model, modalOpen, setModa
         </div>
 
         {/* Conversations */}
-        <div className="flex-1 overflow-y-auto scrollbar-thin px-3 pb-4">
+        <div className={`flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-transparent scrollbar-thumb-primary px-3 pb-4 ${(todayConvs.length > 0 || olderConvs.length > 0) ? "opacity-100" : "opacity-0" } transition-all duration-500`}>
           {todayConvs.length > 0 && (
             <div className="mb-4">
               <p className="text-xs font-semibold text-muted-foreground px-2 mb-2 uppercase tracking-wider">Hari Ini</p>
               {todayConvs.map((c) => (
-                <ConversationItem key={c.id} conv={c} active={c.id === activeId} onSelect={onSelect} />
+                <ConversationItem key={c.id} conv={c} active={c.id === activeId} onSelect={onSelect} setConversations={setConversations} />
               ))}
             </div>
           )}
@@ -83,7 +84,7 @@ export function ChatSidebar({ open, onClose, setModel, model, modalOpen, setModa
             <div>
               <p className="text-xs font-semibold text-muted-foreground px-2 mb-2 uppercase tracking-wider">Sebelumnya</p>
               {olderConvs.map((c) => (
-                <ConversationItem key={c.id} conv={c} active={c.id === activeId} onSelect={onSelect} />
+                <ConversationItem key={c.id} conv={c} active={c.id === activeId} onSelect={onSelect} setConversations={setConversations} />
               ))}
             </div>
           )}
@@ -128,20 +129,3 @@ export function ChatSidebar({ open, onClose, setModel, model, modalOpen, setModa
   );
 }
 
-function ConversationItem({ conv, active, onSelect }: { conv: ChatConversation; active: boolean; onSelect: (id: string) => void }) {
-  return (
-    <button
-      onClick={() => onSelect(conv.id)}
-      className={`
-        w-full flex cursor-pointer items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm transition-colors mb-1
-        ${active
-          ? "bg-primary/15 text-primary font-medium"
-          : "text-sidebar-foreground hover:bg-sidebar-accent"
-        }
-      `}
-    >
-      <MessageSquare className="h-4 w-4 shrink-0 opacity-60" />
-      <span className="truncate">{conv.title}</span>
-    </button>
-  );
-}

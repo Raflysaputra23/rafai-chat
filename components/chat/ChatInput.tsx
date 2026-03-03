@@ -270,7 +270,7 @@ export function ChatInput({ onSend }: ChatInputProps) {
             onKeyDown={handleKeyDown}
             placeholder="Ketik pesan..."
             rows={1}
-            className="flex-1 bg-transparent resize-none outline-none text-sm text-foreground placeholder:text-muted-foreground py-2 max-h-40 scrollbar-thin"
+            className="flex-1 bg-transparent resize-none outline-none text-sm text-foreground placeholder:text-muted-foreground py-2 max-h-24 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-transparent scrollbar-thumb-primary"
           />
 
           {/* Voice button */}

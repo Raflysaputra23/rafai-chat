@@ -14,6 +14,7 @@ import { v4 as uuidv4 } from "uuid";
 
 const Chatbot = () => {
   const { user, loading: authLoading } = useAuth();
+  const [loading, setLoading] = useState<boolean>(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [conversations, setConversations] = useState<ChatConversation[]>([]);
   const [activeConversation, setActiveConversation] = useState<string | null>(null);
@@ -61,7 +62,7 @@ const Chatbot = () => {
           .maybeSingle();
         if (data) {
           setMessages(JSON.parse(data.history));
-        } 
+        }
       } else {
         setMessages([]);
       }
@@ -86,6 +87,7 @@ const Chatbot = () => {
     (async () => {
       await getApikey();
       await getConversation();
+      setLoading(false);
     })();
   }, [user]);
 
@@ -114,7 +116,7 @@ const Chatbot = () => {
 
   const handleSendMessage = async (content: string, files?: File[], link?: string) => {
     const supabase = createClient();
-    const userMsg: ChatMessage = { role: "user", parts: [{ text: `${link && `(Link Youtube: ${link})`} ${content}` }] };
+    const userMsg: ChatMessage = { role: "user", parts: [{ text: `${(!!link ? `(Link Youtube: ${link})` : '')} ${content}` }] };
     setMessages((prev) => [...prev, userMsg]);
     setLoadingText(true);
 
@@ -145,16 +147,16 @@ const Chatbot = () => {
     }
   };
 
-  const handleRespon = async (prompt: string, idcv?: string | null, file?: File[], link?:string) => {
+  const handleRespon = async (prompt: string, idcv?: string | null, file?: File[], link?: string) => {
     try {
       const formdata = new FormData();
       formdata.append("prompt", prompt);
       formdata.append("idcv", idcv ?? "");
       formdata.append("model", model);
-      if(link) {
+      if (link) {
         const ytRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/(watch\?v=|shorts\/|embed\/)?[A-Za-z0-9_-]{11}.*$/;
-        if(!ytRegex.test(link)) {
-          if(!Boolean(messages.length)) await handleDeleteConversation(idcv ?? "");
+        if (!ytRegex.test(link)) {
+          if (!Boolean(messages.length)) await handleDeleteConversation(idcv ?? "");
           return `Link youtube Tidak Valid`;
         }
         formdata.append("url", link);
@@ -164,7 +166,7 @@ const Chatbot = () => {
         file.forEach((f) => formdata.append("files", f));
         formdata.append("typeChat", "multimodal");
       }
-      
+
 
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_URL_DOMAIN}/api/v1`, {
@@ -179,7 +181,7 @@ const Chatbot = () => {
         const data = await res.json();
         return data.response;
       } else {
-        if(!Boolean(messages.length)) await handleDeleteConversation(idcv ?? "");
+        if (!Boolean(messages.length)) await handleDeleteConversation(idcv ?? "");
         return "RafAI tidak dapat merespon, coba lagi beberapa saat...";
       }
     } catch (error) {
@@ -187,9 +189,11 @@ const Chatbot = () => {
     }
   }
 
+  if(authLoading || loading) {
+    return <LoadingScreen statusLoading={authLoading || loading} />
+  }
 
-
-  return authLoading ? <LoadingScreen statusLoading={authLoading} /> : (
+  return (
     <div className={`flex h-screen w-full bg-background ${isDark && "dark"}`}>
       {/* Mobile toggle */}
       <Button
@@ -211,6 +215,7 @@ const Chatbot = () => {
         activeId={activeConversation}
         onSelect={handleSelectConversation}
         onNewChat={handleNewChat}
+        setConversations={setConversations}
       />
 
       <ChatBody

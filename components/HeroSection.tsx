@@ -39,14 +39,7 @@ const codeTabs = [
                 {"\n"}{"  "}
                 <span className="text-foreground">body</span>
                 <span className="text-muted-foreground">:</span>{" "}
-                <span className="text-foreground">JSON</span>
-                <span className="text-muted-foreground">.</span>
-                <span className="text-foreground">stringify</span>
-                <span className="text-muted-foreground">({"{"}</span>{" "}
-                <span className="text-foreground">prompt</span>
-                <span className="text-muted-foreground">:</span>{" "}
-                <span className="text-accent">&quot;Hello RafAI!&quot;</span>{" "}
-                <span className="text-muted-foreground">{"}"})</span>
+                <span className="text-foreground">formdata</span>
                 {"\n"}
                 <span className="text-muted-foreground">{"}"})</span>
             </>
@@ -68,16 +61,16 @@ const codeTabs = [
                 <span className="text-foreground">post</span>
                 <span className="text-muted-foreground">(</span>
                 {"\n"}{"  "}
-                <span className="text-accent">&quot;https://rafai-api.vercel.app/v1/chat&quot;</span>
+                <span className="text-accent">&quot;{process.env.NEXT_PUBLIC_URL_DOMAIN}/api/v1&quot;</span>
                 <span className="text-muted-foreground">,</span>
                 {"\n"}{"  "}
                 <span className="text-foreground">headers</span>
                 <span className="text-muted-foreground">={"{"}</span>
                 <span className="text-accent">&quot;Authorization&quot;</span>
                 <span className="text-muted-foreground">:</span>{" "}
-                <span className="text-accent">&quot;Bearer {"{"}</span>
-                <span className="text-foreground">API_KEY</span>
-                <span className="text-accent">{"}"}&quot;</span>
+                <span className="text-accent">&quot;Bearer </span>
+                <span className="text-accent italic">&apos;API_KEY&apos;</span>
+                <span className="text-accent">&quot;</span>
                 <span className="text-muted-foreground">{"}"}</span>
                 <span className="text-muted-foreground">,</span>
                 {"\n"}{"  "}
@@ -145,7 +138,9 @@ const HeroSection = () => {
                             </Link>
                         </Button>
                         <Button variant="heroOutline" size="lg" className="px-8 py-6 text-base flex items-center gap-2">
-                            Lihat Dokumentasi
+                            <Link href="#dokumentasi">
+                                Lihat Dokumentasi
+                            </Link>
                             <FileText className="w-6 h-6" />
                         </Button>
                     </motion.div>
