@@ -95,7 +95,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const { error } = await supabase.auth.signInWithOAuth({
             provider: "google",
             options: {
-                redirectTo: `https://wfinkgbhuhgfzmibsgrp.supabase.co/auth/v1/callback`,
+                redirectTo: `https://rafai-chat.vercel.app`,
             },
         });
         return { error };
