@@ -71,7 +71,7 @@ const ChatRemarkdown = ({ content }: Props) => {
                     }
 
                     return (
-                        <code className="bg-zinc-800 px-1 py-0.5 rounded text-sm">
+                        <code className="bg-primary-foreground text-muted-foreground px-1 py-0.5 rounded text-sm">
                             {children}
                         </code>
                     );
