@@ -22,6 +22,7 @@ export function ChatInput({ onSend }: ChatInputProps) {
   const [micActive, setMicActive] = useState<boolean>(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const buttonMenuRef = useRef<HTMLButtonElement>(null);
 
   const recognitionRef = useRef<any>(null);
 
@@ -35,9 +36,9 @@ export function ChatInput({ onSend }: ChatInputProps) {
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node) && buttonMenuRef.current && !buttonMenuRef.current.contains(e.target as Node)) {
         setMenuOpen(false);
-      }
+      } 
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -255,6 +256,7 @@ export function ChatInput({ onSend }: ChatInputProps) {
         <div className="flex items-center gap-2">
           {/* Plus button */}
           <button
+            ref={buttonMenuRef}
             onClick={() => setMenuOpen(!menuOpen)}
             className={`shrink-0 h-9 w-9 rounded-full flex items-center justify-center transition-all ${menuOpen ? "bg-primary text-primary-foreground rotate-45" : "hover:bg-secondary text-muted-foreground"
               }`}

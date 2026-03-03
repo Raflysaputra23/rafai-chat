@@ -199,7 +199,7 @@ const Chatbot = () => {
       <Button
         variant={"hero"}
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="fixed top-4 left-4 z-40 p-2 rounded-lg w-10 h-10 md:hidden"
+        className="fixed top-4 left-4 z-40 p-2 rounded-lg w-10 h-10 lg:hidden"
       >
         <Menu className="h-6 w-6" />
       </Button>

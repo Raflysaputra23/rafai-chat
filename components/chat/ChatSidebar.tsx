@@ -32,7 +32,7 @@ export function ChatSidebar({ open, onClose, setModel, model, modalOpen, setModa
           fixed md:relative z-40 h-full flex flex-col
           bg-sidebar-background border-r border-sidebar-border
           transition-all duration-300 ease-in-out
-          ${open ? "w-72 translate-x-0" : "w-0 -translate-x-full md:translate-x-0 md:w-0"}
+          ${open ? "w-72 translate-x-0" : "lg:w-72 lg:translate-x-0 w-0 -translate-x-full md:translate-x-0 md:w-0"}
           overflow-hidden
         `}
       >
@@ -75,7 +75,7 @@ export function ChatSidebar({ open, onClose, setModel, model, modalOpen, setModa
             <div className="mb-4">
               <p className="text-xs font-semibold text-muted-foreground px-2 mb-2 uppercase tracking-wider">Hari Ini</p>
               {todayConvs.map((c) => (
-                <ConversationItem key={c.id} conv={c} active={c.id === activeId} onSelect={onSelect} setConversations={setConversations} />
+                <ConversationItem key={c.id} conv={c} active={c.id === activeId} onSelect={onSelect} setConversations={setConversations} onCloseSidebar={onClose} />
               ))}
             </div>
           )}
@@ -84,7 +84,7 @@ export function ChatSidebar({ open, onClose, setModel, model, modalOpen, setModa
             <div>
               <p className="text-xs font-semibold text-muted-foreground px-2 mb-2 uppercase tracking-wider">Sebelumnya</p>
               {olderConvs.map((c) => (
-                <ConversationItem key={c.id} conv={c} active={c.id === activeId} onSelect={onSelect} setConversations={setConversations} />
+                <ConversationItem key={c.id} conv={c} active={c.id === activeId} onSelect={onSelect} setConversations={setConversations} onCloseSidebar={onClose} />
               ))}
             </div>
           )}

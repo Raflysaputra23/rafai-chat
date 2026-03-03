@@ -8,7 +8,7 @@ import React, { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 
-const ConversationItem = ({ conv, active, onSelect, setConversations }: { conv: ChatConversation; active: boolean; onSelect: (id: string) => void, setConversations: (callback: (prev: ChatConversation[]) => ChatConversation[]) => void }) => {
+const ConversationItem = ({ conv, active, onSelect, setConversations, onCloseSidebar }: { conv: ChatConversation; active: boolean; onSelect: (id: string) => void, setConversations: (callback: (prev: ChatConversation[]) => ChatConversation[]) => void; onCloseSidebar: (prev: boolean) => void }) => {
     const [showModal, setShowModal] = useState<boolean>(false);
 
     const handleDelete = async (e: React.MouseEvent) => {
@@ -21,6 +21,11 @@ const ConversationItem = ({ conv, active, onSelect, setConversations }: { conv: 
         }
     }
 
+    const handleSelectConversation = (id: string) => {
+        onSelect(id);
+        onCloseSidebar(false);
+    }
+
     const handleShowModal = (e: React.MouseEvent) => {
         e.stopPropagation();
         setShowModal((prev) => !prev);
@@ -28,7 +33,7 @@ const ConversationItem = ({ conv, active, onSelect, setConversations }: { conv: 
 
     return (<>
         <button
-            onClick={() => onSelect(conv.id)}
+            onClick={() => handleSelectConversation(conv.id)}
             className={`
         w-full flex cursor-pointer group relative items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm transition-colors mb-1
         ${active
