@@ -267,7 +267,7 @@ print(data["reply"])`;
           <h1 className="text-2xl font-bold text-foreground">Cluster API</h1>
           <p className="text-muted-foreground text-sm">Buat dan kelola cluster chatbot kamu</p>
         </div>
-        <div className="space-x-4">
+        <div className="space-x-4 space-y-2">
           <Button variant="heroOutline" size={"lg"} onClick={() => setShowModalApikey(true)}>
             <Key className="w-4 h-4" /> Buat Apikey
           </Button>
