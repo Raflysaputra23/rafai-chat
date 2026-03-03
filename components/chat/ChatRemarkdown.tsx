@@ -75,7 +75,39 @@ const ChatRemarkdown = ({ content }: Props) => {
                             {children}
                         </code>
                     );
-                }
+                },
+                table({ children }) {
+                    return (
+                        <div className="my-2 overflow-x-auto shadow">
+                            <table className="min-w-max rounded-xl overflow-hidden">
+                                {children}
+                            </table>
+                        </div>
+                    );
+                },
+
+                th({ children }) {
+                    return (
+                        <th className="px-4 py-3 bg-primary-foreground font-semibold text-zinc-200 border-b border-zinc-700">
+                            {children}
+                        </th>
+                    );
+                },
+
+                td({ children }) {
+                    return (
+                        <td className="px-4 py-3 border-b max-w-[500px] border-zinc-800 text-zinc-300">
+                            {children}
+                        </td>
+                    );
+                },
+                tr({ children }) {
+                    return (
+                        <tr className="odd:bg-primary-foreground/10 even:bg-primary-foreground/50">
+                            {children}
+                        </tr>
+                    );
+                },
             }}
         >
             {content}
