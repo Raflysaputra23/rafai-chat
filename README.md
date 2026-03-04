@@ -1,36 +1,34 @@
-🤖 AI Chatbot API App
+# 🤖 AI Chatbot API
 
-Modern AI-powered chatbot application built with Next.js, TypeScript, and OpenAI API.
-Supports Markdown rendering, code highlighting, tables, and responsive UI — optimized for both desktop and mobile.
+> Production-ready AI Chatbot built with Next.js, TypeScript, and OpenAI API.  
+> Fully responsive, Markdown-supported, and optimized for modern UI/UX.
 
-🚀 Features
+---
 
-💬 Real-time AI conversation
+## ✨ Features
 
-🧠 OpenAI API integration
+- 💬 Real-time AI conversation
+- 🧠 OpenAI API integration
+- 📝 Full Markdown support (code blocks, tables, lists, etc.)
+- 🎨 Custom styled components with Tailwind CSS
+- 📱 Fully responsive (mobile-friendly)
+- 📊 Scrollable & rounded tables
+- 🌙 Dark mode ready
+- 🔐 Secure API key handling (environment variables)
 
-📝 Markdown rendering (code blocks, tables, lists, etc.)
+---
 
-🎨 Custom styled UI (TailwindCSS)
+## 🛠 Tech Stack
 
-📱 Fully responsive (mobile-friendly)
+| Technology | Description |
+|------------|-------------|
+| **Next.js 14+** | React Framework |
+| **TypeScript** | Static typing |
+| **Tailwind CSS** | Utility-first styling |
+| **React Markdown** | Markdown rendering |
+| **remark-gfm** | GitHub Flavored Markdown |
+| **OpenAI API** | AI model provider |
 
-📜 Scrollable & styled tables
+---
 
-🧩 Modular component structure
-
-🔒 Secure API key handling via environment variables
-
-🛠 Tech Stack
-
-Framework: Next.js 14+
-
-Language: TypeScript
-
-Styling: Tailwind CSS
-
-Markdown Renderer: React Markdown + remark-gfm
-
-AI Provider: OpenAI API
-
-Deployment: (Vercel / Railway / etc – isi sesuai project kamu)
+## 📂 Project Structure
