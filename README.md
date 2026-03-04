@@ -30,5 +30,3 @@
 | **OpenAI API** | AI model provider |
 
 ---
-
-## 📂 Project Structure
