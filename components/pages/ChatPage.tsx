@@ -130,8 +130,8 @@ const ChatPage = () => {
     const handleSendMessage = async (content: string, files?: File[], link?: string) => {
         const supabase = createClient();
         const userMsg: ChatMessage = { role: "user", parts: [{ text: `${(!!link ? `(Link Youtube: ${link})` : '')} ${content}` }] };
-        setMessages((prev) => prev.filter((p) => p.role != 'error'));
         setMessages((prev) => [...prev, userMsg]);
+        setThinking(null);
         setLoadingText(true);
 
         let idcv = activeConversation;
@@ -250,7 +250,6 @@ const ChatPage = () => {
             }
         } finally {
             setLoadingText(false);
-            setThinking(null);
             setResponse("");
             abortControllerRef.current = null;
         }
