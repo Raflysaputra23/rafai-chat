@@ -89,12 +89,7 @@ export function ChatBody({ messages, onSend, isNew, loading, stream, thinking, o
                           RAFAI SEDANG BERPIKIR
                         </p>
                         <pre className="text-xs text-muted-foreground whitespace-pre-wrap mt-2 font-mono">
-                          <ChatMessageBubble
-                            message={{
-                              role: "model",
-                              parts: [{ text: thinking }]
-                            }}
-                          />
+                          {thinking}
                         </pre>
                       </div>
                     </motion.div>
