@@ -1,0 +1,327 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import FileUpload from "@/lib/fileupload";
+import { defaultConfig, MODEL, rafai, SYSTEM_INSTRUCTIONV2 } from "@/lib/rafai";
+import { Rafaiutils } from "@/lib/rafaiUtils";
+import { headers } from "next/headers";
+
+export const POST = async (req: Request) => {
+  const formData = await req.formData();
+  const apikey =
+    (await headers()).get("authorization")?.split(" ")[1].trim() ?? null;
+
+  if (!apikey) {
+    return new Response(
+      JSON.stringify({
+        message: "Unauthorized",
+        status: 401,
+        copyright: "@rafai.dev",
+      }),
+      { status: 401 },
+    );
+  }
+
+  // const { data } = await supabase
+  //   .from("clusters")
+  //   .select("*")
+  //   .eq("apikey", apikey)
+  //   .maybeSingle();
+  // let tokenAktif = data;
+  // let tipeToken = "cluster";
+  // if (!data) {
+  //   const { data } = await supabase
+  //     .from("apikeys")
+  //     .select("*")
+  //     .eq("apikey", apikey)
+  //     .maybeSingle();
+  //   tokenAktif = data;
+  //   tipeToken = "apikey";
+  //   if (!data) {
+  //     return new Response(
+  //       JSON.stringify({
+  //         message: "Unauthorized",
+  //         status: 401,
+  //         copyright: "@rafai.dev"
+  //       }),
+  //       { status: 401 },
+  //     );
+  //   }
+  // }
+
+  // // CEK LIMIT TOKEN
+  // if (tokenAktif.limit < 1) {
+  //   return new Response(
+  //     JSON.stringify({
+  //       message: "Unauthorized",
+  //       limit: tokenAktif.limit,
+  //       status: 401,
+  //       copyright: "@rafai.dev",
+  //     }),
+  //     { status: 401 },
+  //   );
+  // }
+
+  const model = (formData.get("model") as string) ?? MODEL[1];
+  const typeChat = (formData.get("typeChat") as string) ?? "chat";
+  const instruksi =
+    (formData.get("instruksi") as string) ?? SYSTEM_INSTRUCTIONV2;
+  const files = (formData.getAll("files") as File[]) ?? null;
+  const prompt = (formData.get("prompt") as string) ?? null;
+  const url = (formData.get("url") as string) ?? null;
+  const idcv = (formData.get("idcv") as string) ?? null;
+
+  //   GET HISTORY PERCAKAPAN
+  const history = new Rafaiutils(apikey);
+  await history.loadHistory(idcv);
+
+  if (typeChat == "chat") {
+    try {
+      const chat = rafai.chats.create({
+        model,
+        history: history.getHistory(),
+        config: {
+          ...defaultConfig,
+          systemInstruction: instruksi,
+        },
+      });
+
+      const response = await chat.sendMessageStream({
+        message: prompt,
+      });
+
+      const stream = new ReadableStream({
+        async start(controller) {
+          const encoder = new TextEncoder();
+          let fullText = "";
+          try {
+            for await (const chunk of response) {
+              const chunkText = chunk.text;
+              fullText += chunkText;
+              controller.enqueue(encoder.encode(chunkText));
+            }
+            const cleanText = fullText
+              .replace(/<thinking>[\s\S]*?<\/thinking>/g, "")
+              .trim();
+            // UPDATE HISTORY
+            if (history.size() > 0) {
+              history.addUserMessage(prompt);
+              history.addModelMessage(cleanText);
+              await history.updateToDatabase(idcv);
+            } else {
+              history.addUserMessage(prompt);
+              history.addModelMessage(cleanText);
+              await history.saveToDatabase(idcv);
+            }
+
+            controller.close();
+          } catch (err) {
+            controller.error(err);
+          }
+        },
+      });
+
+      // UPDATE LIMIT
+      // if (tipeToken == "cluster") {
+      //   await supabase
+      //     .from("clusters")
+      //     .update({ limit: tokenAktif.limit - 1 })
+      //     .eq("apikey", apikey);
+      // } else {
+      //   await supabase
+      //     .from("apikeys")
+      //     .update({ limit: tokenAktif.limit - 1 })
+      //     .eq("apikey", apikey);
+      // }
+
+      return new Response(stream, {
+        headers: {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          Connection: "keep-alive",
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      return new Response(
+        JSON.stringify({
+          response:
+            "RafAI chat sedang mengalami masalah, coba beberapa saat lagi!",
+          status: 500,
+          typeChat,
+        }),
+        { status: 500 },
+      );
+    }
+  } else if (typeChat == "multimodal") {
+    try {
+      let contents: any = "";
+
+      if (url) {
+        contents = [
+          {
+            fileData: {
+              fileUri: url,
+            },
+          },
+        ];
+      } else {
+        // convert file to buffer
+        const fileBuffer = [];
+        if (files != null) {
+          for (const file of files) {
+            const buffer = Buffer.from(await file.arrayBuffer());
+            fileBuffer.push({
+              mimeType: file.type,
+              buffer: buffer.toString("base64"),
+            });
+          }
+        }
+
+        contents = fileBuffer.map((file) => ({
+          inlineData: {
+            mimeType: file.mimeType,
+            data: file.buffer,
+          },
+        }));
+      }
+
+      contents.push({ text: prompt });
+
+      const response = await rafai.models.generateContentStream({
+        model,
+        contents,
+        config: {
+          ...defaultConfig,
+          systemInstruction: instruksi,
+        },
+      });
+
+      const stream = new ReadableStream({
+        async start(controller) {
+          const encoder = new TextEncoder();
+          let fullText = "";
+          try {
+            for await (const chunk of response) {
+              const chunkText = chunk.text;
+              fullText += chunkText;
+              controller.enqueue(encoder.encode(chunkText));
+            }
+
+            const cleanText = fullText
+              .replace(/<thinking>[\s\S]*?<\/thinking>/g, "")
+              .trim();
+            // UPDATE HISTORY
+            if (history.size() > 0) {
+              history.addUserMessage(prompt);
+              history.addModelMessage(cleanText);
+              await history.updateToDatabase(idcv);
+            } else {
+              history.addUserMessage(prompt);
+              history.addModelMessage(cleanText);
+              await history.saveToDatabase(idcv);
+            }
+
+            controller.close();
+          } catch (err) {
+            controller.error(err);
+          }
+        },
+      });
+
+      // UPDATE LIMIT
+      // if (tipeToken == "cluster") {
+      //   await supabase
+      //     .from("clusters")
+      //     .update({ limit: tokenAktif.limit - 1 })
+      //     .eq("apikey", apikey);
+      // } else {
+      //   await supabase
+      //     .from("apikeys")
+      //     .update({ limit: tokenAktif.limit - 1 })
+      //     .eq("apikey", apikey);
+      // }
+
+      return new Response(stream, {
+        headers: {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          Connection: "keep-alive",
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      return new Response(
+        JSON.stringify({
+          response:
+            "RafAI multimodal sedang mengalami masalah, coba beberapa saat lagi!",
+          status: 500,
+          typeChat,
+        }),
+        { status: 500 },
+      );
+    }
+  } else if (typeChat == "image") {
+    try {
+      return new Response(
+        JSON.stringify({
+          response: "Coming soon ya",
+          status: 200,
+          typeChat,
+        }),
+        { status: 200 },
+      );
+      const response: any = await rafai.models.generateContent({
+        model,
+        contents: prompt,
+        config: {
+          ...defaultConfig,
+          systemInstruction: instruksi,
+        },
+      });
+
+      if (!response.candidates) {
+        throw new Error("Maaf terjadi kesalahan, silahkan coba lagi.");
+      }
+
+      for (const part of response.candidates[0].content.parts) {
+        if (part.text) {
+          console.log(part.text);
+        } else if (part.inlineData) {
+          const imageData = part.inlineData.data;
+          const buffer = Buffer.from(imageData, "base64");
+          const file = await FileUpload(buffer);
+          console.log("FILE: ", file);
+          return new Response(
+            JSON.stringify({
+              response: file,
+              status: 200,
+              copyright: "@rafai.dev",
+              typeChat,
+            }),
+            { status: 200 },
+          );
+        }
+      }
+
+      return new Response(
+        JSON.stringify({
+          response:
+            "RafAI image sedang mengalami masalah, coba beberapa saat lagi!",
+          status: 500,
+          typeChat,
+        }),
+        { status: 500 },
+      );
+    } catch (error) {
+      console.log(error);
+      return new Response(
+        JSON.stringify({
+          response:
+            "RafAI image sedang mengalami masalah, coba beberapa saat lagi!",
+          status: 500,
+          typeChat,
+        }),
+        { status: 500 },
+      );
+    }
+  }
+};

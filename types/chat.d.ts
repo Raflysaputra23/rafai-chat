@@ -27,6 +27,8 @@ export interface ChatSidebarProps {
 
 interface ChatInputProps {
   onSend: (content: string, files?: File[], link?: string) => void;
+  onStop: () => void;
+  loading: boolean;
 }
 
 interface ChatAreaProps {
@@ -34,4 +36,7 @@ interface ChatAreaProps {
   onSend: (content: string) => void;
   isNew: boolean;
   loading: boolean;
+  stream: string;
+  thinking: string | null;
+  onStopResponse: () => void;
 }

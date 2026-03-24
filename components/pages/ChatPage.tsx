@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { ChatBody } from "@/components/chat/ChatBody";
 import { Menu } from "lucide-react";
@@ -27,8 +27,11 @@ const ChatPage = () => {
     const [apikey, setApikey] = useState<string>("");
     const [model, setModel] = useState<string>("gemini-3-flash-preview");
     const [openModal, setOpenModal] = useState(false);
+    const [thinking, setThinking] = useState<null | string>("");
+    const [response, setResponse] = useState<string>("");
     const { isDark } = useTheme();
     const router = useRouter();
+    const abortControllerRef = useRef<AbortController>(null);
 
     useEffect(() => {
         const handleResize = () => {
@@ -127,6 +130,7 @@ const ChatPage = () => {
     const handleSendMessage = async (content: string, files?: File[], link?: string) => {
         const supabase = createClient();
         const userMsg: ChatMessage = { role: "user", parts: [{ text: `${(!!link ? `(Link Youtube: ${link})` : '')} ${content}` }] };
+        setMessages((prev) => prev.filter((p) => p.role != 'error'));
         setMessages((prev) => [...prev, userMsg]);
         setLoadingText(true);
 
@@ -150,14 +154,35 @@ const ChatPage = () => {
 
         // Mock bot response
         const response = await handleRespon(content, idcv, files, link);
-        setLoadingText(false);
-        if (response) {
-            const botMsg: ChatMessage = { role: "model", parts: [{ text: response }] };
-            setMessages((prev) => [...prev, botMsg]);
+        if (!response) {
+            if (messages.length < 1) await handleDeleteConversation(idcv ?? "");
         }
+
+    };
+
+    const parseAIResponse = (text: string) => {
+        const thinkingStart = text.indexOf("<thinking>");
+        const thinkingEnd = text.indexOf("</thinking>");
+
+        let thinking = null;
+        let finalResponse = text;
+
+        if (thinkingStart !== -1) {
+            if (thinkingEnd !== -1) {
+                thinking = text.substring(thinkingStart + 10, thinkingEnd).trim();
+                finalResponse = text.substring(thinkingEnd + 11).trim();
+            } else {
+                thinking = text.substring(thinkingStart + 10).trim();
+                finalResponse = "";
+            }
+        }
+
+        return { thinking, finalResponse };
     };
 
     const handleRespon = async (prompt: string, idcv?: string | null, file?: File[], link?: string) => {
+        let fullText = "";
+
         try {
             const formdata = new FormData();
             formdata.append("prompt", prompt);
@@ -177,27 +202,66 @@ const ChatPage = () => {
                 formdata.append("typeChat", "multimodal");
             }
 
+            const controller = new AbortController();
+            abortControllerRef.current = controller;
 
-
-            const res = await fetch(`${process.env.NEXT_PUBLIC_URL_DOMAIN}/api/v1`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_URL_DOMAIN}/api/v2`, {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${apikey}`
                 },
-                body: formdata
+                body: formdata,
+                signal: controller.signal
             });
 
-            if (res.status === 200) {
-                const data = await res.json();
-                return data.response;
-            } else {
-                if (!Boolean(messages.length)) await handleDeleteConversation(idcv ?? "");
-                return "RafAI tidak dapat merespon, coba lagi beberapa saat...";
+            if (!res.body) throw new Error("RafAI tidak merespon");
+            if (res.status === 500) throw new Error("RafAI Server Error");
+
+            const reader = res.body.getReader();
+            const decoder = new TextDecoder();
+            let done = false;
+
+            while (!done) {
+                const { value, done: doneReading } = await reader.read();
+                done = doneReading;
+
+                const chunkValue = decoder.decode(value);
+                fullText += chunkValue;
+
+                const { thinking, finalResponse } = parseAIResponse(fullText);
+                setThinking(thinking);
+                setResponse(finalResponse);
             }
+
+            const cleanText = fullText.replace(/<thinking>[\s\S]*?<\/thinking>/g, "").trim();
+            const botMsg: ChatMessage = { role: "model", parts: [{ text: cleanText }] };
+            setMessages((prev) => [...prev, botMsg]);
+            return true;
         } catch (error) {
-            return null;
+            // TANGKEP ABORT ERROR
+            if(error instanceof Error && error.name === 'AbortError') {
+                const botMsg: ChatMessage = { role: "model", parts: [{ text: fullText }] };
+                setMessages((prev) => [...prev, botMsg]);
+                return true;
+            } else {
+                const botMsg: ChatMessage = { role: "model", parts: [{ text: 'RafAI tidak merespon, coba beberapa saat lagi.' }] };
+                setMessages((prev) => [...prev, botMsg]);
+                return false;
+            }
+        } finally {
+            setLoadingText(false);
+            setThinking(null);
+            setResponse("");
+            abortControllerRef.current = null;
         }
     }
+
+    const handleStopResponse = () => {
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort();
+            setLoadingText(false);
+        }
+    };
 
     if (authLoading || loading) {
         return <LoadingScreen statusLoading={authLoading || loading} />
@@ -229,6 +293,9 @@ const ChatPage = () => {
             />
 
             <ChatBody
+                onStopResponse={handleStopResponse}
+                stream={response}
+                thinking={thinking}
                 messages={messages}
                 onSend={handleSendMessage}
                 loading={loadingText}

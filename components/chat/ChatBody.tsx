@@ -3,8 +3,9 @@
 import { useRef, useEffect } from "react";
 import { ChatInput } from "./ChatInput";
 import { ChatMessageBubble } from "./ChatMessageBubble";
-import { Zap, Code, Lightbulb, BookOpen} from "lucide-react";
+import { Zap, Code, Lightbulb, BookOpen } from "lucide-react";
 import type { ChatAreaProps } from "@/types/chat.d.ts";
+import { AnimatePresence, motion } from "framer-motion";
 
 
 const suggestions = [
@@ -13,18 +14,25 @@ const suggestions = [
   { icon: BookOpen, label: "Bantu pelajari", desc: "Algoritma dan struktur data" },
 ];
 
-export function ChatBody({ messages, onSend, isNew, loading }: ChatAreaProps) {
+export function ChatBody({ messages, onSend, isNew, loading, stream, thinking, onStopResponse }: ChatAreaProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
+  const scrollToBottom = () => {
+    bottomRef.current?.scrollIntoView({
+      behavior: "auto",
+      block: "end"
+    });
+  };
+
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    scrollToBottom();
+  }, [messages, stream, thinking]);
 
   return (
     <div className="flex-1 flex flex-col h-full min-w-0 relative">
 
       {/* Messages / Welcome */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-transparent scrollbar-thumb-primary">
+      <div className="flex-1 scroll-smooth overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-transparent scrollbar-thumb-primary">
         {isNew ? (
           <div className="lg:flex lg:flex-col lg:justify-center lg:items-center lg:h-full px-6 animate-fade-in py-6">
             <div className="h-16 w-16 mx-auto rounded-2xl bg-primary/15 flex items-center justify-center mb-10 glow-primary">
@@ -57,17 +65,50 @@ export function ChatBody({ messages, onSend, isNew, loading }: ChatAreaProps) {
               <ChatMessageBubble key={i} message={msg} />
             ))}
 
-            {/* Loading indicator */}
-            <div className={`h-10 w-10 ${loading ? "visible opacity-100 scale-100 transition duration-600 ease-in-out" : "invisible opacity-0 scale-50"} flex rounded-lg bg-primary/30 shadow shadow-primary items-center justify-center mb-6 glow-primary relative`}>
-              <Zap className={`${loading ? "opacity-100 scale-100 transition duration-600 ease-in-out" : "invisible opacity-0 scale-50"} h-6 w-6 text-primary`} />
-              {/* Orbiting dot */}
-              <div className="absolute inset-0 animate-spin" style={{ animationDuration: "3s" }}>
-                <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 h-3 w-3 rounded-full bg-primary glow-primary" />
-              </div>
-            </div>
+            {loading && (
+              <motion.div
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+                className="flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
+
+                <AnimatePresence>
+                  {thinking && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, height: 0 }}
+                      animate={{ opacity: 1, y: 0, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="bg-primary/10 border-l-4 border-primary p-3 rounded-lg my-2">
+                        <p className="text-xs font-bold text-primary flex items-center gap-2">
+                          <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                          </span>
+                          RAFAI SEDANG BERPIKIR
+                        </p>
+                        <pre className="text-xs text-muted-foreground whitespace-pre-wrap mt-2 font-mono">
+                          {thinking}
+                        </pre>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {(stream || !thinking) && (
+                  <ChatMessageBubble
+                    message={{
+                      role: "model",
+                      parts: [{ text: stream }]
+                    }}
+                  />
+                )}
+              </motion.div>
+            )}
 
             {/* Scroll to bottom */}
-            <div ref={bottomRef} />
+            <div ref={bottomRef} className="h-4" />
           </div>
         )}
       </div>
@@ -75,7 +116,7 @@ export function ChatBody({ messages, onSend, isNew, loading }: ChatAreaProps) {
       {/* Input */}
       <div className="shrink-0 px-4 pb-4 pt-2">
         <div className="max-w-3xl mx-auto">
-          <ChatInput onSend={onSend} />
+          <ChatInput onSend={onSend} onStop={onStopResponse} loading={loading} />
           <p className="text-[11px] text-muted-foreground text-center mt-2">
             RafAI bisa membuat kesalahan. Periksa info penting.
           </p>

@@ -29,7 +29,6 @@ const ChatRemarkdown = ({ content }: Props) => {
 
     return (
         <ReactMarkdown
-
             remarkPlugins={[remarkGfm]}
             components={{
                 code({ className, children, ...props }) {

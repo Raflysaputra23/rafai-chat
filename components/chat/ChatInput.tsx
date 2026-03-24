@@ -2,7 +2,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react";
-import { Plus, Send, Mic, Image as img, FileText, Video, X, Link } from "lucide-react";
+import { Plus, Send, Mic, Image as img, FileText, Video, X, Link, Disc } from "lucide-react";
 import type { ChatInputProps } from "@/types/chat.d.ts";
 import Image from "next/image";
 import Modal from "../ui/modal";
@@ -11,7 +11,7 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 
 
-export function ChatInput({ onSend }: ChatInputProps) {
+export function ChatInput({ onSend, onStop, loading }: ChatInputProps) {
   const [value, setValue] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
@@ -38,7 +38,7 @@ export function ChatInput({ onSend }: ChatInputProps) {
     const handler = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node) && buttonMenuRef.current && !buttonMenuRef.current.contains(e.target as Node)) {
         setMenuOpen(false);
-      } 
+      }
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -73,7 +73,7 @@ export function ChatInput({ onSend }: ChatInputProps) {
 
   const handleMicrophone = (micActive: boolean) => {
     setMicActive(micActive);
-    if(micActive) {
+    if (micActive) {
       startRecording();
     } else {
       stopRecording();
@@ -207,7 +207,7 @@ export function ChatInput({ onSend }: ChatInputProps) {
               value={link}
               type="text"
               name="name"
-              onChange={(e) => {setLink(e.target.value); setFiles([]); setPreviews([])}}
+              onChange={(e) => { setLink(e.target.value); setFiles([]); setPreviews([]) }}
               required
             />
           </div>
@@ -288,11 +288,14 @@ export function ChatInput({ onSend }: ChatInputProps) {
 
           {/* Send button */}
           <button
-            onClick={handleSend}
-            disabled={!value.trim()}
-            className="shrink-0 h-9 w-9 rounded-full flex items-center justify-center bg-primary text-primary-foreground disabled:opacity-30 disabled:cursor-not-allowed hover:opacity-90 transition-all glow-primary"
+            onClick={loading ? onStop : handleSend}
+            className={`shrink-0 h-9 w-9 rounded-full flex items-center justify-center border ${loading ? 'bg-destructive/10 border-destructive' : 'bg-primary '} text-primary-foreground disabled:opacity-30 disabled:cursor-not-allowed hover:opacity-90 transition-all glow-primary`}
           >
-            <Send className="h-4 w-4" />
+            {loading ? 
+              <Disc className="animate-pulse h-4 w-4 text-destructive"/>
+            :
+              <Send className="h-4 w-4" />
+            }
           </button>
         </div>
       </div>
