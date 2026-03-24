@@ -290,6 +290,7 @@ export function ChatInput({ onSend, onStop, loading }: ChatInputProps) {
           <button
             onClick={loading ? onStop : handleSend}
             className={`shrink-0 h-9 w-9 rounded-full flex items-center justify-center border ${loading ? 'bg-destructive/10 border-destructive' : 'bg-primary '} text-primary-foreground disabled:opacity-30 disabled:cursor-not-allowed hover:opacity-90 transition-all glow-primary`}
+            disabled={!value}
           >
             {loading ? 
               <Disc className="animate-pulse h-4 w-4 text-destructive"/>
