@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useCallback } from "react";
 import { ChatInput } from "./ChatInput";
 import { ChatMessageBubble } from "./ChatMessageBubble";
 import { Zap, Code, Lightbulb, BookOpen } from "lucide-react";
@@ -16,23 +16,49 @@ const suggestions = [
 
 export function ChatBody({ messages, onSend, isNew, loading, stream, thinking, onStopResponse }: ChatAreaProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const rafRef = useRef<number | null>(null);
 
-  const scrollToBottom = () => {
-    bottomRef.current?.scrollIntoView({
-      behavior: "auto",
-      block: "end"
+  const isNearBottom = useCallback(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return true;
+    // Anggap "near bottom" jika sisa scroll < 150px
+    return el.scrollHeight - el.scrollTop - el.clientHeight < 150;
+  }, []);
+
+  const scrollToBottom = useCallback((smooth = false) => {
+    // Batalkan RAf sebelumnya jika ada (throttle)
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
+    }
+    rafRef.current = requestAnimationFrame(() => {
+      bottomRef.current?.scrollIntoView({
+        behavior: smooth ? "smooth" : "auto",
+        block: "end",
+      });
+      rafRef.current = null;
     });
-  };
+  }, []);
 
+  // Saat pesan baru masuk (bukan streaming) → selalu scroll ke bawah
   useEffect(() => {
-    scrollToBottom();
-  }, [messages, stream, thinking]);
+    scrollToBottom(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages]);
+
+  // Saat streaming → hanya scroll jika user sudah di dekat bawah
+  useEffect(() => {
+    if ((stream || thinking) && isNearBottom()) {
+      scrollToBottom(false);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stream, thinking]);
 
   return (
     <div className="flex-1 flex flex-col h-full min-w-0 relative">
 
       {/* Messages / Welcome */}
-      <div className="flex-1 scroll-smooth overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-transparent scrollbar-thumb-primary">
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-transparent scrollbar-thumb-primary">
         {isNew ? (
           <div className="lg:flex lg:flex-col lg:justify-center lg:items-center lg:h-full px-6 animate-fade-in py-6">
             <div className="h-16 w-16 mx-auto rounded-2xl bg-primary/15 flex items-center justify-center mb-10 glow-primary">
@@ -96,14 +122,12 @@ export function ChatBody({ messages, onSend, isNew, loading, stream, thinking, o
                   )}
                 </AnimatePresence>
 
-                {(stream || !thinking) && (
-                  <ChatMessageBubble
-                    message={{
-                      role: "model",
-                      parts: [{ text: stream }]
-                    }}
-                  />
-                )}
+                <ChatMessageBubble
+                  message={{
+                    role: "model",
+                    parts: [{ text: stream ?? "" }]
+                  }}
+                />
               </motion.div>
             )}
 

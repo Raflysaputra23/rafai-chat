@@ -12,7 +12,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { v4 as uuidv4 } from "uuid";
-import { toastError, toastSuccess } from "@/lib/toast";
+import { toastError } from "@/lib/toast";
 import { useRouter } from "next/navigation";
 
 
